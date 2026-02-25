@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Katani Pharmacy Sales Analyzer</title>
+    <title>Katani Pharmacy & Retail</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- html2canvas for high‑quality PNG export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -90,6 +92,38 @@
         h2 i {
             color: #2a9d5f;
         }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .section-header h2 {
+            margin-bottom: 0;
+        }
+        .export-btn {
+            background-color: #2a9d5f;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s;
+            box-shadow: 0 2px 8px rgba(42,157,95,0.3);
+        }
+        .export-btn:hover {
+            background-color: #1a6b3b;
+        }
+        .export-btn i {
+            font-size: 1.1rem;
+        }
         
         .upload-area {
             border: 3px dashed #2a9d5f;
@@ -172,7 +206,7 @@
             font-size: 1.1rem;
         }
         
-        /* Updated Stats Cards */
+        /* Stats Cards */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -214,7 +248,7 @@
             color: #2a9d5f;
         }
         
-        .stat-card.total-customers .stat-icon {
+        .stat-card.customers .stat-icon {
             background-color: rgba(52, 152, 219, 0.15);
             color: #3498db;
         }
@@ -246,7 +280,7 @@
             color: #2a9d5f;
         }
         
-        .stat-card.total-customers .value {
+        .stat-card.customers .value {
             color: #3498db;
         }
         
@@ -268,7 +302,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 30px;
-            margin-bottom: 30px;
+            margin-top: 30px;
         }
         
         .chart-box {
@@ -284,10 +318,20 @@
             font-size: 1.3rem;
         }
         
+        /* Cashier table */
+        .table-container {
+            overflow-x: auto;
+            margin: 20px 0 10px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            padding: 5px;
+        }
+        
         .cashier-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
+            min-width: 750px;  /* reduced because we removed a column */
         }
         
         .cashier-table th {
@@ -295,28 +339,32 @@
             color: white;
             padding: 15px;
             text-align: left;
+            font-weight: 600;
+            font-size: 0.95rem;
         }
         
         .cashier-table td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #eee;
+            padding: 14px 15px;
+            border-bottom: 1px solid #e0e7e3;
+            color: #2d3e3a;
         }
         
-        .cashier-table tr:hover {
-            background-color: #f8fffa;
+        .cashier-table tbody tr:hover {
+            background-color: #edf8f2;
         }
         
-        .cashier-table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        
-        .cashier-table tr:nth-child(even):hover {
-            background-color: #f0f7f3;
+        .cashier-table tbody tr:nth-child(even) {
+            background-color: #f9fdfb;
         }
         
         .total-row {
             font-weight: 700;
-            background-color: #edf8f2 !important;
+            background-color: #e1f0e8 !important;
+            border-top: 2px solid #2a9d5f;
+        }
+        .total-row td {
+            font-weight: 700;
+            color: #1a4d2e;
         }
         
         .footer {
@@ -326,13 +374,6 @@
             border-top: 1px solid #ddd;
             color: #666;
             font-size: 0.9rem;
-        }
-        
-        .highlight {
-            background-color: #fff9e6;
-            padding: 3px 6px;
-            border-radius: 3px;
-            font-weight: 600;
         }
         
         @media (max-width: 1200px) {
@@ -353,23 +394,15 @@
                 text-align: center;
                 gap: 20px;
             }
-            
             .filters {
                 flex-direction: column;
             }
-            
             .filter-box {
                 min-width: 100%;
             }
-            
             .stats-grid {
                 grid-template-columns: 1fr;
             }
-            
-            .stat-card {
-                padding: 20px 15px;
-            }
-            
             .stat-card .value {
                 font-size: 1.8rem;
             }
@@ -383,40 +416,36 @@
                 <div class="logo-container">
                     <i class="fas fa-pills logo"></i>
                     <div>
-                        <h1>Katani Pharmacy</h1>
-                        
-                    </div>
-                </div>
-                <div class="stats-header">
-                    <div class="stat-card" style="background: rgba(255,255,255,0.2); border: none; padding: 10px 20px;">
-                        
-                        <div class="value" style="color: white;"></div>
+                        <h1>Katani Pharmacy & Retail</h1>
+                        <div class="subtitle">(Pharmacy + Wholesale/Retail)</div>
                     </div>
                 </div>
             </div>
         </header>
         
         <div class="content-wrapper">
+            <!-- Upload section -->
             <section class="upload-section">
                 <h2><i class="fas fa-file-upload"></i> Upload Sales Data</h2>
                 <div class="upload-area" id="uploadArea">
                     <i class="fas fa-file-excel"></i>
                     <h3>Upload Your Excel Sales File</h3>
-                    <p>Upload sales File from the POS</p>
+                    <p>Upload sales file from the POS (both Pharmacy & Retail)</p>
                     <button class="upload-btn" id="uploadBtn">Select Excel File</button>
                     <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" style="display: none;">
                 </div>
                 <div class="file-info" id="fileInfo">
                     <p><strong>File loaded:</strong> <span id="fileName">No file selected</span></p>
                     <p><strong>Total records:</strong> <span id="totalRecords">0</span></p>
-                    <p><strong>Katani Pharmacy records:</strong> <span id="filteredRecords">0</span></p>
-                   
+                    <p><strong>Combined records (Pharmacy + Retail):</strong> <span id="filteredRecords">0</span></p>
                 </div>
             </section>
             
+            <!-- Results section (hidden until file loaded) -->
             <section class="results-section" id="resultsSection" style="display: none;">
                 <h2><i class="fas fa-chart-bar"></i> Sales Analysis Results</h2>
                 
+                <!-- Filter boxes (summary) -->
                 <div class="filters">
                     <div class="filter-box">
                         <h4>Date Range</h4>
@@ -427,8 +456,8 @@
                         <p id="cashiersCount">0</p>
                     </div>
                     <div class="filter-box">
-                        <h4>Total Transactions</h4>
-                        <p id="totalTransactions">0</p>
+                        <h4>Total Customers</h4>   <!-- renamed -->
+                        <p id="totalCustomers">0</p>
                     </div>
                     <div class="filter-box">
                         <h4>Payment Distribution</h4>
@@ -436,45 +465,63 @@
                     </div>
                 </div>
                 
-                <!-- Updated Stats Cards -->
+                <!-- Main stat cards (customers = unique receipts) -->
                 <div class="stats-grid">
                     <div class="stat-card total-sales">
-                        <div class="stat-icon">
-                            <i class="fas fa-money-bill-wave"></i>
-                        </div>
+                        <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
                         <h4>TOTAL SALES</h4>
                         <div class="value" id="totalSalesAmount">KES 0</div>
-                        <div class="sub-value">Katani Pharmacy Only</div>
+                        <div class="sub-value">Pharmacy + Retail</div>
                     </div>
                     
-                    <div class="stat-card total-customers">
-                        <div class="stat-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <h4>TOTAL CUSTOMERS</h4>
-                        <div class="value" id="uniqueCustomers">0</div>
-                        <div class="sub-value">Unique Customers</div>
+                    <div class="stat-card customers">   <!-- renamed class -->
+                        <div class="stat-icon"><i class="fas fa-user-friends"></i></div>
+                        <h4>CUSTOMERS</h4>               <!-- renamed -->
+                        <div class="value" id="customersCount">0</div>
+                        <div class="sub-value">Unique receipts</div>
                     </div>
                     
                     <div class="stat-card basket-value">
-                        <div class="stat-icon">
-                            <i class="fas fa-shopping-basket"></i>
-                        </div>
-                        <h4>AVERAGE BASKET VALUE</h4>
+                        <div class="stat-icon"><i class="fas fa-shopping-basket"></i></div>
+                        <h4>AVERAGE BASKET</h4>
                         <div class="value" id="avgBasketValue">KES 0</div>
-                        <div class="sub-value">Per Transaction</div>
+                        <div class="sub-value">Sales ÷ Customers</div>   <!-- updated -->
                     </div>
                     
                     <div class="stat-card products-sold">
-                        <div class="stat-icon">
-                            <i class="fas fa-capsules"></i>
-                        </div>
-                        <h4>PRODUCTS SOLD QTY</h4>
+                        <div class="stat-icon"><i class="fas fa-capsules"></i></div>
+                        <h4>PRODUCTS SOLD</h4>
                         <div class="value" id="productsSold">0</div>
-                        <div class="sub-value">Total Units Sold</div>
+                        <div class="sub-value">Total units</div>
                     </div>
                 </div>
                 
+                <!-- Cashier Sales Summary table (with export) -->
+                <div class="section-header">
+                    <h2><i class="fas fa-users"></i> Cashier Sales Summary</h2>
+                    <button class="export-btn" id="exportTableBtn"><i class="fas fa-camera"></i> Export Table as PNG (HD)</button>
+                </div>
+                <div class="table-container" id="cashierTableContainer">
+                    <table class="cashier-table" id="cashierTable">
+                        <thead>
+                            <tr>
+                                <th>Cashier Name</th>
+                                <th>Total Sales (KES)</th>
+                                <th>Customers (Receipts)</th>   <!-- renamed, removed unique names column -->
+                                <th>Average Basket (KES)</th>
+                                <th>Top Product</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cashierTableBody">
+                            <!-- rows inserted by JS -->
+                        </tbody>
+                        <tfoot id="cashierTableFooter">
+                            <!-- footer inserted by JS -->
+                        </tfoot>
+                    </table>
+                </div>
+                
+                <!-- Charts (below the table) -->
                 <div class="charts-container">
                     <div class="chart-box">
                         <h3>Cashier Performance (Total Sales)</h3>
@@ -485,33 +532,11 @@
                         <canvas id="basketChart"></canvas>
                     </div>
                 </div>
-                
-                <h2><i class="fas fa-users"></i> Cashier Sales Summary</h2>
-                <div class="table-container">
-                    <table class="cashier-table" id="cashierTable">
-                        <thead>
-                            <tr>
-                                <th>Cashier Name</th>
-                                <th>Total Sales (KES)</th>
-                                <th>Transaction Count</th>
-                                <th>Unique Customers</th>
-                                <th>Average Basket Value (KES)</th>
-                                <th>Top Product</th>
-                            </tr>
-                        </thead>
-                        <tbody id="cashierTableBody">
-                            <!-- Table rows will be inserted here by JavaScript -->
-                        </tbody>
-                        <tfoot id="cashierTableFooter">
-                            <!-- Footer row will be inserted here by JavaScript -->
-                        </tfoot>
-                    </table>
-                </div>
             </section>
         </div>
         
         <div class="footer">
-            <p>Katani Pharmacy</p>
+            <p>Katani Pharmacy & Retail — customers counted by unique receipts | Basket = Sales ÷ Customers</p>
         </div>
     </div>
 
@@ -527,23 +552,22 @@
         const filteredRecords = document.getElementById('filteredRecords');
         const dateRange = document.getElementById('dateRange');
         const totalSalesAmount = document.getElementById('totalSalesAmount');
-        const uniqueCustomers = document.getElementById('uniqueCustomers');
+        const customersCount = document.getElementById('customersCount');      // main customers stat
         const cashiersCount = document.getElementById('cashiersCount');
-        const totalTransactions = document.getElementById('totalTransactions');
+        const totalCustomersFilter = document.getElementById('totalCustomers'); // filter box
         const avgBasketValue = document.getElementById('avgBasketValue');
         const productsSold = document.getElementById('productsSold');
         const paymentSummary = document.getElementById('paymentSummary');
         const cashierTableBody = document.getElementById('cashierTableBody');
         const cashierTableFooter = document.getElementById('cashierTableFooter');
+        const exportTableBtn = document.getElementById('exportTableBtn');
         
         // Chart variables
         let salesChart = null;
         let basketChart = null;
         
         // Event Listeners
-        uploadBtn.addEventListener('click', () => {
-            fileInput.click();
-        });
+        uploadBtn.addEventListener('click', () => fileInput.click());
         
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -560,7 +584,6 @@
             e.preventDefault();
             uploadArea.style.borderColor = '#2a9d5f';
             uploadArea.style.backgroundColor = '#f8fffa';
-            
             if (e.dataTransfer.files.length) {
                 fileInput.files = e.dataTransfer.files;
                 handleFileUpload(e.dataTransfer.files[0]);
@@ -568,263 +591,214 @@
         });
         
         fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length) {
-                handleFileUpload(e.target.files[0]);
-            }
+            if (e.target.files.length) handleFileUpload(e.target.files[0]);
         });
         
-        // Function to handle file upload
+        // Export table as PNG using html2canvas
+        exportTableBtn.addEventListener('click', function() {
+            const tableContainer = document.getElementById('cashierTableContainer');
+            html2canvas(tableContainer, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'katani_cashier_summary.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }).catch(err => {
+                alert('Could not export table. Please try again.');
+                console.error(err);
+            });
+        });
+        
+        // File processing
         function handleFileUpload(file) {
             fileName.textContent = file.name;
-            
             const reader = new FileReader();
-            
             reader.onload = function(e) {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
                 const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                 const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-                
                 processSalesData(jsonData);
             };
-            
             reader.readAsArrayBuffer(file);
         }
         
-        // Process sales data
         function processSalesData(data) {
-            // Show file info
             fileInfo.classList.add('show');
             totalRecords.textContent = data.length;
             
-            // Filter for Katani Pharmacy only
-            const kataniData = data.filter(row => {
-                // Check if service_point exists and equals "Katani Pharmacy"
-                // Handle case-insensitive matching and trim whitespace
-                const servicePoint = row.service_point || row.service_point || '';
-                return String(servicePoint).trim().toLowerCase() === 'katani pharmacy';
+            // Allowed service points (case‑insensitive)
+            const allowed = [
+                'katani pharmacy',
+                'retail pos',
+                'katani wholesale/retail',
+                'katani wholesale',
+                'katani retail'
+            ];
+            
+            const combinedData = data.filter(row => {
+                const sp = (row.service_point || '').toString().trim().toLowerCase();
+                return allowed.includes(sp);
             });
             
-            filteredRecords.textContent = kataniData.length;
+            filteredRecords.textContent = combinedData.length;
             
-            if (kataniData.length === 0) {
-                alert('No sales data found for Katani Pharmacy. Please check your file.');
+            if (combinedData.length === 0) {
+                alert('No sales data found for Katani Pharmacy or Retail POS. Please check your file.');
                 return;
             }
             
-            // Show results section
             resultsSection.style.display = 'block';
-            
-            // Analyze the data
-            analyzeData(kataniData);
+            analyzeData(combinedData);
         }
         
-        // Main analysis function
         function analyzeData(data) {
-            // Get unique invoice numbers (to identify unique customers/transactions)
-            const uniqueInvoices = [...new Set(data.map(item => item.invoice_no))];
+            // --- Overall unique receipts = customers ---
+            const uniqueReceiptsOverall = new Set(data.map(item => item.invoice_no).filter(Boolean));
+            const totalCustomers = uniqueReceiptsOverall.size;
             
-            // Group by cashier (user)
+            // Group by cashier
             const cashierGroups = {};
-            
-            // Track payment modes for summary
             const paymentModeTotals = {};
             
             data.forEach(sale => {
                 const cashier = sale.user || 'Unknown';
-                
                 if (!cashierGroups[cashier]) {
                     cashierGroups[cashier] = {
                         name: cashier,
                         totalSales: 0,
-                        transactions: new Set(),
-                        customers: new Set(),
-                        basketValues: [],
+                        transactions: new Set(),        // unique invoice numbers (customers)
+                        basketValues: {},                // invoice -> amount
                         products: {},
                         paymentModes: {}
                     };
                 }
-                
-                // Add to cashier's stats
-                cashierGroups[cashier].totalSales += parseFloat(sale.amount) || 0;
-                cashierGroups[cashier].transactions.add(sale.invoice_no);
-                cashierGroups[cashier].customers.add(sale.customer_name);
-                
-                // Add to basket values for this transaction
-                const transactionKey = sale.invoice_no;
-                if (!cashierGroups[cashier].basketValues[transactionKey]) {
-                    cashierGroups[cashier].basketValues[transactionKey] = 0;
-                }
-                cashierGroups[cashier].basketValues[transactionKey] += parseFloat(sale.amount) || 0;
-                
-                // Track products sold
-                const product = sale.product || 'Unknown';
-                if (!cashierGroups[cashier].products[product]) {
-                    cashierGroups[cashier].products[product] = 0;
-                }
-                cashierGroups[cashier].products[product] += parseInt(sale.qty) || 0;
-                
-                // Track payment modes
+                const g = cashierGroups[cashier];
+                const amount = parseFloat(sale.amount) || 0;
+                const invoice = sale.invoice_no;
+                const qty = parseInt(sale.qty) || 0;
                 const paymentMode = sale.payment_mode || 'Unknown';
-                if (!cashierGroups[cashier].paymentModes[paymentMode]) {
-                    cashierGroups[cashier].paymentModes[paymentMode] = 0;
-                }
-                cashierGroups[cashier].paymentModes[paymentMode] += parseFloat(sale.amount) || 0;
+                const product = sale.product || 'Unknown';
                 
-                // Track overall payment modes
-                if (!paymentModeTotals[paymentMode]) {
-                    paymentModeTotals[paymentMode] = 0;
-                }
-                paymentModeTotals[paymentMode] += parseFloat(sale.amount) || 0;
-            });
-            
-            // Calculate basket values per cashier
-            Object.keys(cashierGroups).forEach(cashier => {
-                const basketArray = Object.values(cashierGroups[cashier].basketValues);
-                cashierGroups[cashier].avgBasketValue = basketArray.length > 0 
-                    ? basketArray.reduce((sum, val) => sum + val, 0) / basketArray.length 
-                    : 0;
+                g.totalSales += amount;
+                if (invoice) g.transactions.add(invoice);
                 
-                // Find top product
-                const products = cashierGroups[cashier].products;
-                const topProduct = Object.keys(products).length > 0 
-                    ? Object.keys(products).reduce((a, b) => products[a] > products[b] ? a : b, '')
-                    : 'None';
-                cashierGroups[cashier].topProduct = topProduct;
+                if (invoice) {
+                    if (!g.basketValues[invoice]) g.basketValues[invoice] = 0;
+                    g.basketValues[invoice] += amount;
+                }
+                
+                g.products[product] = (g.products[product] || 0) + qty;
+                g.paymentModes[paymentMode] = (g.paymentModes[paymentMode] || 0) + amount;
+                
+                paymentModeTotals[paymentMode] = (paymentModeTotals[paymentMode] || 0) + amount;
             });
             
-            // Calculate overall stats
-            const totalSales = Object.values(cashierGroups).reduce((sum, cashier) => sum + cashier.totalSales, 0);
-            const totalTransactionsCount = Object.values(cashierGroups).reduce((sum, cashier) => sum + cashier.transactions.size, 0);
-            const allCustomers = new Set();
-            Object.values(cashierGroups).forEach(cashier => {
-                cashier.customers.forEach(customer => allCustomers.add(customer));
+            // Compute per‑cashier averages (basket = totalSales / customers) and top product
+            Object.values(cashierGroups).forEach(g => {
+                const customerCount = g.transactions.size;
+                g.avgBasketValue = customerCount > 0 ? g.totalSales / customerCount : 0;
+                
+                let topProd = 'None', maxQty = 0;
+                for (const [prod, qty] of Object.entries(g.products)) {
+                    if (qty > maxQty) { maxQty = qty; topProd = prod; }
+                }
+                g.topProduct = topProd;
             });
             
-            // Calculate total products sold
-            const totalProductsSold = data.reduce((sum, item) => sum + (parseInt(item.qty) || 0), 0);
+            // Totals for stats
+            const totalSales = Object.values(cashierGroups).reduce((s, g) => s + g.totalSales, 0);
+            const totalProducts = data.reduce((sum, item) => sum + (parseInt(item.qty) || 0), 0);
             
-            // Calculate average basket value across all cashiers
-            const allBasketValues = [];
-            Object.values(cashierGroups).forEach(cashier => {
-                allBasketValues.push(...Object.values(cashier.basketValues));
-            });
-            const overallAvgBasket = allBasketValues.length > 0 
-                ? allBasketValues.reduce((sum, val) => sum + val, 0) / allBasketValues.length 
-                : 0;
+            // Average basket overall = totalSales / totalCustomers
+            const overallAvgBasket = totalCustomers > 0 ? totalSales / totalCustomers : 0;
             
-            // Create payment summary text
-            let paymentSummaryText = '';
-            const paymentModes = Object.keys(paymentModeTotals);
-            if (paymentModes.length > 0) {
-                const topPayment = paymentModes.reduce((a, b) => paymentModeTotals[a] > paymentModeTotals[b] ? a : b);
-                paymentSummaryText = `${topPayment} (${Math.round(paymentModeTotals[topPayment]/totalSales*100)}%)`;
-            } else {
-                paymentSummaryText = 'No data';
+            // Payment summary (top mode)
+            let payText = 'No data';
+            const payModes = Object.keys(paymentModeTotals);
+            if (payModes.length) {
+                const top = payModes.reduce((a, b) => paymentModeTotals[a] > paymentModeTotals[b] ? a : b);
+                const pct = Math.round((paymentModeTotals[top] / totalSales) * 100);
+                payText = `${top} (${pct}%)`;
             }
             
-            // Get date range
-            const dates = data.map(item => new Date(item.date)).filter(date => !isNaN(date.getTime()));
-            const minDate = dates.length > 0 ? new Date(Math.min(...dates)) : null;
-            const maxDate = dates.length > 0 ? new Date(Math.max(...dates)) : null;
+            // Date range
+            const dates = data.map(d => new Date(d.date)).filter(d => !isNaN(d));
+            const minDate = dates.length ? new Date(Math.min(...dates)) : null;
+            const maxDate = dates.length ? new Date(Math.max(...dates)) : null;
             
-            // Update UI with overall stats
-            dateRange.textContent = minDate && maxDate 
-                ? `${minDate.toLocaleDateString()} to ${maxDate.toLocaleDateString()}` 
-                : 'All dates';
-            
+            // Update UI
+            dateRange.textContent = (minDate && maxDate) ? `${minDate.toLocaleDateString()} to ${maxDate.toLocaleDateString()}` : 'All dates';
             totalSalesAmount.textContent = `KES ${formatNumber(totalSales)}`;
-            uniqueCustomers.textContent = allCustomers.size;
+            customersCount.textContent = formatNumber(totalCustomers);          // main stat
             cashiersCount.textContent = Object.keys(cashierGroups).length;
-            totalTransactions.textContent = totalTransactionsCount;
+            totalCustomersFilter.textContent = formatNumber(totalCustomers);   // filter box
             avgBasketValue.textContent = `KES ${formatNumber(overallAvgBasket)}`;
-            productsSold.textContent = formatNumber(totalProductsSold);
-            paymentSummary.textContent = paymentSummaryText;
+            productsSold.textContent = formatNumber(totalProducts);
+            paymentSummary.textContent = payText;
             
-            // Update cashier table
+            // Build cashier table (no unique names column)
             updateCashierTable(cashierGroups, totalSales);
             
             // Create charts
             createCharts(cashierGroups);
         }
         
-        // Format number with commas
         function formatNumber(num) {
-            if (num % 1 === 0) {
-                return num.toLocaleString('en-US');
-            } else {
-                return num.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            }
+            if (Number.isInteger(num)) return num.toLocaleString('en-US');
+            return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
         
-        // Update cashier table
-        function updateCashierTable(cashierGroups, totalSales) {
-            // Clear table
+        function updateCashierTable(groups, totalSales) {
             cashierTableBody.innerHTML = '';
+            const sorted = Object.values(groups).sort((a, b) => b.totalSales - a.totalSales);
             
-            // Sort cashiers by total sales (descending)
-            const sortedCashiers = Object.values(cashierGroups).sort((a, b) => b.totalSales - a.totalSales);
-            
-            // Add rows for each cashier
-            sortedCashiers.forEach(cashier => {
+            sorted.forEach(c => {
                 const row = document.createElement('tr');
-                
                 row.innerHTML = `
-                    <td>${cashier.name}</td>
-                    <td>KES ${formatNumber(cashier.totalSales)}</td>
-                    <td>${cashier.transactions.size}</td>
-                    <td>${cashier.customers.size}</td>
-                    <td>KES ${formatNumber(cashier.avgBasketValue)}</td>
-                    <td>${cashier.topProduct}</td>
+                    <td>${c.name}</td>
+                    <td>KES ${formatNumber(c.totalSales)}</td>
+                    <td>${c.transactions.size}</td>
+                    <td>KES ${formatNumber(c.avgBasketValue)}</td>
+                    <td>${c.topProduct}</td>
                 `;
-                
                 cashierTableBody.appendChild(row);
             });
             
-            // Add footer with totals
-            const footerRow = document.createElement('tr');
-            footerRow.className = 'total-row';
+            // Footer with totals
+            const totalTx = sorted.reduce((s, c) => s + c.transactions.size, 0);
+            // average basket for footer: totalSales / totalTx (same as overallAvg)
+            const footerAvg = totalTx > 0 ? totalSales / totalTx : 0;
             
-            const totalTransactions = sortedCashiers.reduce((sum, cashier) => sum + cashier.transactions.size, 0);
-            const totalCustomers = sortedCashiers.reduce((sum, cashier) => sum + cashier.customers.size, 0);
-            const avgBasketOverall = sortedCashiers.length > 0 
-                ? sortedCashiers.reduce((sum, cashier) => sum + cashier.avgBasketValue, 0) / sortedCashiers.length 
-                : 0;
-            
-            footerRow.innerHTML = `
+            const footer = document.createElement('tr');
+            footer.className = 'total-row';
+            footer.innerHTML = `
                 <td><strong>TOTAL / AVERAGE</strong></td>
                 <td><strong>KES ${formatNumber(totalSales)}</strong></td>
-                <td><strong>${totalTransactions}</strong></td>
-                <td><strong>${totalCustomers}</strong></td>
-                <td><strong>KES ${formatNumber(avgBasketOverall)}</strong></td>
-                <td>-</td>
+                <td><strong>${totalTx}</strong></td>
+                <td><strong>KES ${formatNumber(footerAvg)}</strong></td>
+                <td><strong>—</strong></td>
             `;
-            
             cashierTableFooter.innerHTML = '';
-            cashierTableFooter.appendChild(footerRow);
+            cashierTableFooter.appendChild(footer);
         }
         
-        // Create charts
-        function createCharts(cashierGroups) {
-            // Sort cashiers by total sales for charts
-            const sortedCashiers = Object.values(cashierGroups).sort((a, b) => b.totalSales - a.totalSales);
-            const cashierNames = sortedCashiers.map(cashier => cashier.name);
-            const cashierSales = sortedCashiers.map(cashier => cashier.totalSales);
-            const cashierBaskets = sortedCashiers.map(cashier => cashier.avgBasketValue);
+        function createCharts(groups) {
+            const sorted = Object.values(groups).sort((a, b) => b.totalSales - a.totalSales);
+            const names = sorted.map(c => c.name);
+            const sales = sorted.map(c => c.totalSales);
+            const baskets = sorted.map(c => c.avgBasketValue);
             
-            // Destroy previous charts if they exist
             if (salesChart) salesChart.destroy();
             if (basketChart) basketChart.destroy();
             
-            // Sales chart
-            const salesCtx = document.getElementById('salesChart').getContext('2d');
-            salesChart = new Chart(salesCtx, {
+            const ctxSales = document.getElementById('salesChart').getContext('2d');
+            salesChart = new Chart(ctxSales, {
                 type: 'bar',
                 data: {
-                    labels: cashierNames,
+                    labels: names,
                     datasets: [{
                         label: 'Total Sales (KES)',
-                        data: cashierSales,
+                        data: sales,
                         backgroundColor: '#2a9d5f',
                         borderColor: '#1a6b3b',
                         borderWidth: 1
@@ -833,36 +807,21 @@
                 options: {
                     responsive: true,
                     plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        title: {
-                            display: true,
-                            text: 'Total Sales by Cashier'
-                        }
+                        legend: { position: 'top' },
+                        title: { display: true, text: 'Total Sales by Cashier' }
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return 'KES ' + formatNumber(value);
-                                }
-                            }
-                        }
-                    }
+                    scales: { y: { beginAtZero: true, ticks: { callback: v => 'KES ' + formatNumber(v) } } }
                 }
             });
             
-            // Basket value chart
-            const basketCtx = document.getElementById('basketChart').getContext('2d');
-            basketChart = new Chart(basketCtx, {
+            const ctxBasket = document.getElementById('basketChart').getContext('2d');
+            basketChart = new Chart(ctxBasket, {
                 type: 'bar',
                 data: {
-                    labels: cashierNames,
+                    labels: names,
                     datasets: [{
-                        label: 'Average Basket Value (KES)',
-                        data: cashierBaskets,
+                        label: 'Avg Basket (KES)',
+                        data: baskets,
                         backgroundColor: '#4cc9a7',
                         borderColor: '#2a9d5f',
                         borderWidth: 1
@@ -871,33 +830,13 @@
                 options: {
                     responsive: true,
                     plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        title: {
-                            display: true,
-                            text: 'Average Transaction Value by Cashier'
-                        }
+                        legend: { position: 'top' },
+                        title: { display: true, text: 'Average Basket by Cashier (Sales ÷ Customers)' }
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return 'KES ' + formatNumber(value);
-                                }
-                            }
-                        }
-                    }
+                    scales: { y: { beginAtZero: true, ticks: { callback: v => 'KES ' + formatNumber(v) } } }
                 }
             });
         }
-        
-        // No demo data loaded on page load - clean state
-        window.addEventListener('DOMContentLoaded', () => {
-            // Everything starts empty, ready for user to upload their data
-            console.log('Katani Pharmacy Sales Analyzer ready. Upload your Excel file to begin.');
-        });
     </script>
 </body>
 </html>
