@@ -1,13 +1,14 @@
+Here is an HTML document that creates a combined sales dashboard for both the Pharmacy and Retail (Minimart) sections, displayed in a single consolidated table with grand totals, and without the cashier performance charts.
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Katani Pharmacy & Retail</title>
+    <title>Katani Pharmacy + Minimart | Cashier Sales Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- html2canvas for high‑quality PNG export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * {
@@ -16,81 +17,82 @@
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         body {
-            background-color: #f5f7fa;
-            color: #333;
-            line-height: 1.6;
+            background-color: #f8f5f7;
+            color: #2d3e3a;
+            line-height: 1.5;
         }
-        
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 16px 20px;
         }
-        
+
         header {
-            background: linear-gradient(135deg, #1a6b3b 0%, #2a9d5f 100%);
+            background: linear-gradient(135deg, #c44569 0%, #e6678f 100%);
             color: white;
-            padding: 25px 0;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 18px 0;
+            border-radius: 14px;
+            margin-bottom: 24px;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
         }
-        
+
         .header-content {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 30px;
+            padding: 0 28px;
+            flex-wrap: wrap;
         }
-        
+
         .logo-container {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
         }
-        
+
         .logo {
-            font-size: 2.5rem;
+            font-size: 2rem;
             color: #fff;
         }
-        
+
         h1 {
-            font-size: 2.2rem;
+            font-size: 1.8rem;
             font-weight: 700;
         }
-        
+
         .subtitle {
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             opacity: 0.9;
-            margin-top: 5px;
+            margin-top: 4px;
         }
-        
+
         .content-wrapper {
             display: flex;
             flex-direction: column;
-            gap: 30px;
+            gap: 24px;
         }
-        
+
         .upload-section, .results-section {
             background-color: white;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-radius: 16px;
+            padding: 22px 26px;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
         }
-        
+
         h2 {
-            color: #1a6b3b;
-            margin-bottom: 20px;
-            font-size: 1.8rem;
+            color: #c44569;
+            margin-bottom: 18px;
+            font-size: 1.5rem;
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        
+
         h2 i {
-            color: #2a9d5f;
+            color: #e6678f;
         }
 
         .section-header {
@@ -98,745 +100,526 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
         .section-header h2 {
             margin-bottom: 0;
         }
         .export-btn {
-            background-color: #2a9d5f;
+            background-color: #e6678f;
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-size: 0.95rem;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-size: 0.85rem;
             font-weight: 600;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            transition: background-color 0.2s;
-            box-shadow: 0 2px 8px rgba(42,157,95,0.3);
+            transition: 0.2s;
+            box-shadow: 0 2px 6px rgba(198, 69, 105, 0.2);
         }
         .export-btn:hover {
-            background-color: #1a6b3b;
+            background-color: #c44569;
         }
-        .export-btn i {
-            font-size: 1.1rem;
-        }
-        
+
         .upload-area {
-            border: 3px dashed #2a9d5f;
-            border-radius: 10px;
-            padding: 40px 20px;
+            border: 2px dashed #e6678f;
+            border-radius: 16px;
+            padding: 32px 20px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s ease;
-            background-color: #f8fffa;
+            transition: 0.2s;
+            background-color: #fffafc;
         }
-        
+
         .upload-area:hover {
-            background-color: #edf8f2;
-            border-color: #1a6b3b;
+            background-color: #ffeef4;
+            border-color: #c44569;
         }
-        
+
         .upload-area i {
-            font-size: 3.5rem;
-            color: #2a9d5f;
-            margin-bottom: 15px;
+            font-size: 2.8rem;
+            color: #e6678f;
+            margin-bottom: 12px;
         }
-        
+
         .upload-area h3 {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-            color: #1a6b3b;
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+            color: #c44569;
         }
-        
-        .upload-area p {
-            color: #666;
-            margin-bottom: 20px;
-        }
-        
+
         .upload-btn {
-            background-color: #2a9d5f;
+            background-color: #e6678f;
             color: white;
             border: none;
-            padding: 12px 30px;
-            border-radius: 5px;
-            font-size: 1rem;
+            padding: 10px 28px;
+            border-radius: 40px;
+            font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.3s;
+            margin-top: 12px;
+            transition: 0.2s;
         }
-        
         .upload-btn:hover {
-            background-color: #1a6b3b;
+            background-color: #c44569;
         }
-        
+
         .file-info {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f0f7f3;
-            border-radius: 5px;
+            margin-top: 16px;
+            padding: 12px 18px;
+            background-color: #ffeef4;
+            border-radius: 12px;
             display: none;
+            font-size: 0.9rem;
         }
-        
         .file-info.show {
-            display: block;
-        }
-        
-        .filters {
             display: flex;
-            gap: 20px;
-            margin-bottom: 25px;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        /* KPIs - smaller compact cards */
+        .stats-cards {
+            display: flex;
+            gap: 14px;
+            margin: 10px 0 20px;
             flex-wrap: wrap;
         }
-        
-        .filter-box {
-            background-color: #f0f7f3;
-            padding: 15px;
-            border-radius: 8px;
+        .stat-mini {
+            background: #fef9fb;
             flex: 1;
-            min-width: 200px;
+            min-width: 140px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            border-left: 4px solid #e6678f;
+            transition: 0.1s;
         }
-        
-        .filter-box h4 {
-            color: #1a6b3b;
-            margin-bottom: 10px;
-            font-size: 1.1rem;
-        }
-        
-        /* Stats Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .stat-card {
-            background: white;
-            padding: 25px 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            border-top: 5px solid #2a9d5f;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            transition: transform 0.3s ease;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-        }
-        
-        .stat-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 15px;
-            font-size: 1.5rem;
-        }
-        
-        .stat-card.total-sales .stat-icon {
-            background-color: rgba(42, 157, 95, 0.15);
-            color: #2a9d5f;
-        }
-        
-        .stat-card.customers .stat-icon {
-            background-color: rgba(52, 152, 219, 0.15);
-            color: #3498db;
-        }
-        
-        .stat-card.basket-value .stat-icon {
-            background-color: rgba(155, 89, 182, 0.15);
-            color: #9b59b6;
-        }
-        
-        .stat-card.products-sold .stat-icon {
-            background-color: rgba(231, 76, 60, 0.15);
-            color: #e74c3c;
-        }
-        
-        .stat-card h4 {
-            color: #555;
-            font-size: 1rem;
-            margin-bottom: 10px;
+        .stat-mini h4 {
+            color: #9b6b7c;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
             font-weight: 600;
         }
-        
-        .stat-card .value {
-            font-size: 2.2rem;
+        .stat-mini .value {
+            font-size: 1.4rem;
             font-weight: 800;
-            margin-bottom: 5px;
+            color: #c44569;
+            line-height: 1.2;
         }
-        
-        .stat-card.total-sales .value {
-            color: #2a9d5f;
-        }
-        
-        .stat-card.customers .value {
-            color: #3498db;
-        }
-        
-        .stat-card.basket-value .value {
-            color: #9b59b6;
-        }
-        
-        .stat-card.products-sold .value {
-            color: #e74c3c;
-        }
-        
-        .stat-card .sub-value {
-            font-size: 0.9rem;
-            color: #777;
-            font-weight: 500;
-        }
-        
-        .charts-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-top: 30px;
-        }
-        
-        .chart-box {
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-        
-        .chart-box h3 {
-            color: #1a6b3b;
-            margin-bottom: 15px;
-            font-size: 1.3rem;
-        }
-        
-        /* Cashier table */
+
+        /* Main table styling */
         .table-container {
             overflow-x: auto;
-            margin: 20px 0 10px;
+            margin: 18px 0 8px;
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            padding: 5px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+            border: 1px solid #f3e2e8;
         }
-        
-        .cashier-table {
+        .sales-table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 750px;  /* reduced because we removed a column */
+            font-size: 0.85rem;
         }
-        
-        .cashier-table th {
-            background-color: #2a9d5f;
+        .sales-table th {
+            background-color: #e6678f;
             color: white;
-            padding: 15px;
+            padding: 12px 12px;
             text-align: left;
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
         }
-        
-        .cashier-table td {
-            padding: 14px 15px;
-            border-bottom: 1px solid #e0e7e3;
-            color: #2d3e3a;
+        .sales-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f0dfe5;
+            color: #3e2c34;
         }
-        
-        .cashier-table tbody tr:hover {
-            background-color: #edf8f2;
+        .sales-table tbody tr:hover {
+            background-color: #fff0f5;
         }
-        
-        .cashier-table tbody tr:nth-child(even) {
-            background-color: #f9fdfb;
+        .section-title-row {
+            background-color: #fad9e6 !important;
+            font-weight: 800;
         }
-        
-        .total-row {
+        .section-title-row td {
+            font-weight: 800;
+            background-color: #f8cfdf;
+            color: #a13355;
+            font-size: 0.9rem;
+            border-top: 2px solid #e6678f;
+            border-bottom: 1px solid #e6678f;
+        }
+        .subtotal-row {
+            background-color: #fff0f5 !important;
             font-weight: 700;
-            background-color: #e1f0e8 !important;
-            border-top: 2px solid #2a9d5f;
+            border-top: 1px solid #eac0cf;
         }
-        .total-row td {
+        .subtotal-row td {
             font-weight: 700;
-            color: #1a4d2e;
+            color: #b14167;
         }
-        
-        .footer {
-            text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
-            color: #666;
+        .grand-total-row {
+            background-color: #ffe4ee !important;
+            font-weight: 800;
+            border-top: 3px solid #c44569;
             font-size: 0.9rem;
         }
-        
-        @media (max-width: 1200px) {
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        .grand-total-row td {
+            font-weight: 800;
+            color: #8b2c4e;
         }
-        
-        @media (max-width: 1024px) {
-            .charts-container {
-                grid-template-columns: 1fr;
-            }
+        .footer-note {
+            margin-top: 12px;
+            font-size: 0.75rem;
+            color: #a77a89;
+            text-align: right;
         }
-        
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                text-align: center;
-                gap: 20px;
-            }
-            .filters {
-                flex-direction: column;
-            }
-            .filter-box {
-                min-width: 100%;
-            }
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            .stat-card .value {
-                font-size: 1.8rem;
-            }
+        hr {
+            margin: 6px 0;
+        }
+        @media (max-width: 780px) {
+            .header-content { flex-direction: column; text-align: center; gap: 10px; }
+            .stats-cards { gap: 10px; }
+            .stat-mini .value { font-size: 1.2rem; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="header-content">
-                <div class="logo-container">
-                    <i class="fas fa-pills logo"></i>
-                    <div>
-                        <h1>Katani Pharmacy & Retail</h1>
-                        <div class="subtitle">(Pharmacy + Wholesale/Retail)</div>
-                    </div>
+<div class="container">
+    <header>
+        <div class="header-content">
+            <div class="logo-container">
+                <i class="fas fa-prescription-bottle logo"></i>
+                <div>
+                    <h1>Katani Pharmacy + Minimart</h1>
+                    <div class="subtitle">Cashier Sales & Customer Performance Dashboard</div>
                 </div>
             </div>
-        </header>
-        
-        <div class="content-wrapper">
-            <!-- Upload section -->
-            <section class="upload-section">
-                <h2><i class="fas fa-file-upload"></i> Upload Sales Data</h2>
-                <div class="upload-area" id="uploadArea">
-                    <i class="fas fa-file-excel"></i>
-                    <h3>Upload Your Excel Sales File</h3>
-                    <p>Upload sales file from the POS (both Pharmacy & Retail)</p>
-                    <button class="upload-btn" id="uploadBtn">Select Excel File</button>
-                    <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" style="display: none;">
-                </div>
-                <div class="file-info" id="fileInfo">
-                    <p><strong>File loaded:</strong> <span id="fileName">No file selected</span></p>
-                    <p><strong>Total records:</strong> <span id="totalRecords">0</span></p>
-                    <p><strong>Combined records (Pharmacy + Retail):</strong> <span id="filteredRecords">0</span></p>
-                </div>
-            </section>
-            
-            <!-- Results section (hidden until file loaded) -->
-            <section class="results-section" id="resultsSection" style="display: none;">
-                <h2><i class="fas fa-chart-bar"></i> Sales Analysis Results</h2>
-                
-                <!-- Filter boxes (summary) -->
-                <div class="filters">
-                    <div class="filter-box">
-                        <h4>Date Range</h4>
-                        <p id="dateRange">Upload file to see date range</p>
-                    </div>
-                    <div class="filter-box">
-                        <h4>Total Cashiers</h4>
-                        <p id="cashiersCount">0</p>
-                    </div>
-                    <div class="filter-box">
-                        <h4>Total Customers</h4>   <!-- renamed -->
-                        <p id="totalCustomers">0</p>
-                    </div>
-                    <div class="filter-box">
-                        <h4>Payment Distribution</h4>
-                        <p id="paymentSummary">-</p>
-                    </div>
-                </div>
-                
-                <!-- Main stat cards (customers = unique receipts) -->
-                <div class="stats-grid">
-                    <div class="stat-card total-sales">
-                        <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
-                        <h4>TOTAL SALES</h4>
-                        <div class="value" id="totalSalesAmount">KES 0</div>
-                        <div class="sub-value">Pharmacy + Retail</div>
-                    </div>
-                    
-                    <div class="stat-card customers">   <!-- renamed class -->
-                        <div class="stat-icon"><i class="fas fa-user-friends"></i></div>
-                        <h4>CUSTOMERS</h4>               <!-- renamed -->
-                        <div class="value" id="customersCount">0</div>
-                        <div class="sub-value">Unique receipts</div>
-                    </div>
-                    
-                    <div class="stat-card basket-value">
-                        <div class="stat-icon"><i class="fas fa-shopping-basket"></i></div>
-                        <h4>AVERAGE BASKET</h4>
-                        <div class="value" id="avgBasketValue">KES 0</div>
-                        <div class="sub-value">Sales ÷ Customers</div>   <!-- updated -->
-                    </div>
-                    
-                    <div class="stat-card products-sold">
-                        <div class="stat-icon"><i class="fas fa-capsules"></i></div>
-                        <h4>PRODUCTS SOLD</h4>
-                        <div class="value" id="productsSold">0</div>
-                        <div class="sub-value">Total units</div>
-                    </div>
-                </div>
-                
-                <!-- Cashier Sales Summary table (with export) -->
-                <div class="section-header">
-                    <h2><i class="fas fa-users"></i> Cashier Sales Summary</h2>
-                    <button class="export-btn" id="exportTableBtn"><i class="fas fa-camera"></i> Export Table as PNG (HD)</button>
-                </div>
-                <div class="table-container" id="cashierTableContainer">
-                    <table class="cashier-table" id="cashierTable">
-                        <thead>
-                            <tr>
-                                <th>Cashier Name</th>
-                                <th>Total Sales (KES)</th>
-                                <th>Customers (Receipts)</th>   <!-- renamed, removed unique names column -->
-                                <th>Average Basket (KES)</th>
-                                <th>Top Product</th>
-                            </tr>
-                        </thead>
-                        <tbody id="cashierTableBody">
-                            <!-- rows inserted by JS -->
-                        </tbody>
-                        <tfoot id="cashierTableFooter">
-                            <!-- footer inserted by JS -->
-                        </tfoot>
-                    </table>
-                </div>
-                
-                <!-- Charts (below the table) -->
-                <div class="charts-container">
-                    <div class="chart-box">
-                        <h3>Cashier Performance (Total Sales)</h3>
-                        <canvas id="salesChart"></canvas>
-                    </div>
-                    <div class="chart-box">
-                        <h3>Average Basket Value by Cashier</h3>
-                        <canvas id="basketChart"></canvas>
-                    </div>
-                </div>
-            </section>
         </div>
-        
-        <div class="footer">
-            <p>Katani Pharmacy & Retail — customers counted by unique receipts | Basket = Sales ÷ Customers</p>
-        </div>
-    </div>
+    </header>
 
-    <script>
-        // DOM elements
-        const uploadArea = document.getElementById('uploadArea');
-        const uploadBtn = document.getElementById('uploadBtn');
-        const fileInput = document.getElementById('fileInput');
-        const fileInfo = document.getElementById('fileInfo');
-        const resultsSection = document.getElementById('resultsSection');
-        const fileName = document.getElementById('fileName');
-        const totalRecords = document.getElementById('totalRecords');
-        const filteredRecords = document.getElementById('filteredRecords');
-        const dateRange = document.getElementById('dateRange');
-        const totalSalesAmount = document.getElementById('totalSalesAmount');
-        const customersCount = document.getElementById('customersCount');      // main customers stat
-        const cashiersCount = document.getElementById('cashiersCount');
-        const totalCustomersFilter = document.getElementById('totalCustomers'); // filter box
-        const avgBasketValue = document.getElementById('avgBasketValue');
-        const productsSold = document.getElementById('productsSold');
-        const paymentSummary = document.getElementById('paymentSummary');
-        const cashierTableBody = document.getElementById('cashierTableBody');
-        const cashierTableFooter = document.getElementById('cashierTableFooter');
-        const exportTableBtn = document.getElementById('exportTableBtn');
-        
-        // Chart variables
-        let salesChart = null;
-        let basketChart = null;
-        
-        // Event Listeners
-        uploadBtn.addEventListener('click', () => fileInput.click());
-        
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.style.borderColor = '#1a6b3b';
-            uploadArea.style.backgroundColor = '#edf8f2';
+    <div class="content-wrapper">
+        <!-- Upload Section -->
+        <section class="upload-section">
+            <h2><i class="fas fa-file-import"></i> Upload Sales File</h2>
+            <div class="upload-area" id="uploadArea">
+                <i class="fas fa-file-excel"></i>
+                <h3>Upload Excel / CSV Sales Data</h3>
+                <p style="font-size:0.85rem;">Columns needed: service_point, invoice_no, amount, qty, user, product, payment_mode, date</p>
+                <button class="upload-btn" id="uploadBtn">Select Excel File</button>
+                <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" style="display: none;">
+            </div>
+            <div class="file-info" id="fileInfo">
+                <span><strong>📄 File:</strong> <span id="fileName">—</span></span>
+                <span><strong>📋 Records:</strong> <span id="totalRecords">0</span></span>
+                <span><strong>✅ Valid rows:</strong> <span id="filteredRecords">0</span></span>
+            </div>
+        </section>
+
+        <!-- Results + Table Section -->
+        <section class="results-section" id="resultsSection" style="display: none;">
+            <div class="section-header">
+                <h2><i class="fas fa-chart-line"></i> Sales & Customers Overview</h2>
+                <button class="export-btn" id="exportTableBtn"><i class="fas fa-camera"></i> Export as PNG</button>
+            </div>
+            
+            <!-- Compact KPI Cards -->
+            <div class="stats-cards">
+                <div class="stat-mini"><h4>📅 PERIOD</h4><div class="value" id="dateRangeVal">—</div></div>
+                <div class="stat-mini"><h4>💰 TOTAL SALES (All)</h4><div class="value" id="totalSalesAll">KES 0</div></div>
+                <div class="stat-mini"><h4>🧾 TOTAL CUSTOMERS</h4><div class="value" id="totalReceiptsAll">0</div></div>
+                <div class="stat-mini"><h4>📦 TOTAL ITEMS SOLD</h4><div class="value" id="totalQtyAll">0</div></div>
+                <div class="stat-mini"><h4>💳 AVG BASKET</h4><div class="value" id="avgBasketGlobal">KES 0</div></div>
+            </div>
+
+            <!-- CASHIER + SECTION TABLE (Format: Pharmacy & Minimart with cashier breakdown) -->
+            <div class="table-container" id="salesTableContainer">
+                <table class="sales-table" id="combinedSalesTable">
+                    <thead>
+                        <tr><th style="width:28%">SECTION / CASHIER</th><th>TOTAL SALES (KES)</th><th>TOTAL CUSTOMERS</th><th>BASKET VALUE (KES)</th></tr>
+                    </thead>
+                    <tbody id="combinedTableBody">
+                        <!-- dynamic rows: Pharmacy header, cashiers, pharmacy total, minimart header, cashiers, minimart total, GRAND totals -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="footer-note">
+                <i class="fas fa-receipt"></i> Customers = unique invoice_no per cashier/section. Basket = Sales ÷ Customers.
+            </div>
+        </section>
+    </div>
+</div>
+
+<script>
+    // DOM elements
+    const uploadArea = document.getElementById('uploadArea');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const fileInput = document.getElementById('fileInput');
+    const fileInfo = document.getElementById('fileInfo');
+    const resultsSection = document.getElementById('resultsSection');
+    const fileNameSpan = document.getElementById('fileName');
+    const totalRecordsSpan = document.getElementById('totalRecords');
+    const filteredRecordsSpan = document.getElementById('filteredRecords');
+    const dateRangeVal = document.getElementById('dateRangeVal');
+    const totalSalesAllSpan = document.getElementById('totalSalesAll');
+    const totalReceiptsAllSpan = document.getElementById('totalReceiptsAll');
+    const totalQtyAllSpan = document.getElementById('totalQtyAll');
+    const avgBasketGlobalSpan = document.getElementById('avgBasketGlobal');
+    const combinedTableBody = document.getElementById('combinedTableBody');
+    const exportTableBtn = document.getElementById('exportTableBtn');
+
+    let pharmacyRawRows = [];
+    let retailRawRows = [];
+
+    // Helper formatting
+    function formatCurrency(amount) {
+        if (isNaN(amount)) amount = 0;
+        return `KES ${amount.toLocaleString('en-KE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    }
+    function formatNumber(num) {
+        if (isNaN(num)) num = 0;
+        return num.toLocaleString('en-KE');
+    }
+
+    // Determine section
+    function getSectionType(servicePointRaw) {
+        const sp = (servicePointRaw || '').toString().trim().toLowerCase();
+        if (sp === 'pharmacy' || sp.includes('pharmacy')) return 'pharmacy';
+        if (sp.includes('retail') || sp.includes('minimart') || sp.includes('wholesale/retail')) return 'retail';
+        return null;
+    }
+
+    // Upload logic
+    uploadBtn.addEventListener('click', () => fileInput.click());
+    uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.style.borderColor = '#c44569'; uploadArea.style.backgroundColor = '#ffeef4'; });
+    uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor = '#e6678f'; uploadArea.style.backgroundColor = '#fffafc'; });
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#e6678f';
+        uploadArea.style.backgroundColor = '#fffafc';
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            handleFileUpload(e.dataTransfer.files[0]);
+        }
+    });
+    fileInput.addEventListener('change', (e) => { if (e.target.files.length) handleFileUpload(e.target.files[0]); });
+
+    // Export PNG
+    exportTableBtn.addEventListener('click', () => {
+        const container = document.getElementById('salesTableContainer');
+        html2canvas(container, { scale: 2, backgroundColor: '#ffffff', logging: false }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'katani_cashier_summary.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }).catch(() => alert('Export error, try again.'));
+    });
+
+    // File processing
+    function handleFileUpload(file) {
+        fileNameSpan.textContent = file.name;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+            processData(jsonData);
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function processData(rawData) {
+        totalRecordsSpan.textContent = rawData.length;
+        let pharmacyArr = [], retailArr = [];
+        rawData.forEach(row => {
+            const spField = row.service_point || row['Service Point'] || row['service point'] || '';
+            const section = getSectionType(spField);
+            if (section === 'pharmacy') pharmacyArr.push(row);
+            else if (section === 'retail') retailArr.push(row);
         });
-        
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.style.borderColor = '#2a9d5f';
-            uploadArea.style.backgroundColor = '#f8fffa';
-        });
-        
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.style.borderColor = '#2a9d5f';
-            uploadArea.style.backgroundColor = '#f8fffa';
-            if (e.dataTransfer.files.length) {
-                fileInput.files = e.dataTransfer.files;
-                handleFileUpload(e.dataTransfer.files[0]);
+        pharmacyRawRows = pharmacyArr;
+        retailRawRows = retailArr;
+        const totalValid = pharmacyArr.length + retailArr.length;
+        filteredRecordsSpan.textContent = totalValid;
+
+        if (totalValid === 0) {
+            alert('No valid Pharmacy or Minimart records found. Please check service_point values ("Pharmacy" / "Retail POS").');
+            return;
+        }
+
+        resultsSection.style.display = 'block';
+        buildCashierTable(pharmacyArr, retailArr);
+    }
+
+    // Compute metrics per cashier (user column) within a set of rows
+    function getCashierMetrics(rows) {
+        // rows array, returns Map: cashierName -> { totalSales, customersSet, totalQuantity }
+        const cashierMap = new Map(); // key = cashier name
+        rows.forEach(row => {
+            let cashier = row.user ? row.user.toString().trim() : 'Unassigned';
+            if (cashier === '') cashier = 'Unassigned';
+            const amount = parseFloat(row.amount) || 0;
+            const invoice = row.invoice_no ? row.invoice_no.toString().trim() : null;
+            const qty = parseInt(row.qty) || 0;
+
+            if (!cashierMap.has(cashier)) {
+                cashierMap.set(cashier, { totalSales: 0, customersSet: new Set(), totalQty: 0 });
             }
+            const entry = cashierMap.get(cashier);
+            entry.totalSales += amount;
+            if (invoice) entry.customersSet.add(invoice);
+            entry.totalQty += qty;
         });
-        
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length) handleFileUpload(e.target.files[0]);
+        // Convert to array sorted by sales desc
+        let cashierArray = Array.from(cashierMap.entries()).map(([name, data]) => ({
+            name,
+            totalSales: data.totalSales,
+            customers: data.customersSet.size,
+            totalQty: data.totalQty,
+            basket: data.customersSet.size > 0 ? data.totalSales / data.customersSet.size : 0
+        }));
+        cashierArray.sort((a,b) => b.totalSales - a.totalSales);
+        return cashierArray;
+    }
+
+    // Compute section totals (aggregated across cashiers)
+    function getSectionTotalsFromCashiers(cashierArray) {
+        let totalSales = 0, totalCustomersSet = new Set(), totalQty = 0;
+        // However we don't have full customer sets per cashier aggregated without double counting invoices across cashiers? 
+        // but each invoice belongs to exactly one cashier (user). So we can sum customers counts safely.
+        // For grand totals we recompute from original rows later for consistency.
+        cashierArray.forEach(c => {
+            totalSales += c.totalSales;
+            totalCustomersSet.size; // we cannot aggregate set across cashiers simply, but we recompute grand from raw rows later.
         });
+        // We'll instead compute section level from rows again to be accurate for subtotal lines.
+        return { totalSales, totalCustomers: 0 }; // placeholder
+    }
+
+    // Build full table with pharmacy + minimart rows, cashier breakdown and subtotals
+    function buildCashierTable(pharmacyRows, retailRows) {
+        // 1) Pharmacy cashier metrics
+        const pharmacyCashiers = getCashierMetrics(pharmacyRows);
+        // 2) Retail cashier metrics
+        const retailCashiers = getCashierMetrics(retailRows);
         
-        // Export table as PNG using html2canvas
-        exportTableBtn.addEventListener('click', function() {
-            const tableContainer = document.getElementById('cashierTableContainer');
-            html2canvas(tableContainer, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = 'katani_cashier_summary.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-            }).catch(err => {
-                alert('Could not export table. Please try again.');
-                console.error(err);
-            });
+        // Pharmacy subtotals (aggregated from rows)
+        let pharmacyTotalSales = 0, pharmacyCustomersSet = new Set(), pharmacyTotalQty = 0;
+        pharmacyRows.forEach(r => {
+            pharmacyTotalSales += parseFloat(r.amount) || 0;
+            const inv = r.invoice_no ? r.invoice_no.toString().trim() : null;
+            if (inv) pharmacyCustomersSet.add(inv);
+            pharmacyTotalQty += parseInt(r.qty) || 0;
         });
+        const pharmacyTotalCustomers = pharmacyCustomersSet.size;
+        const pharmacyAvgBasket = pharmacyTotalCustomers > 0 ? pharmacyTotalSales / pharmacyTotalCustomers : 0;
         
-        // File processing
-        function handleFileUpload(file) {
-            fileName.textContent = file.name;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-                processSalesData(jsonData);
-            };
-            reader.readAsArrayBuffer(file);
+        // Retail subtotals
+        let retailTotalSales = 0, retailCustomersSet = new Set(), retailTotalQty = 0;
+        retailRows.forEach(r => {
+            retailTotalSales += parseFloat(r.amount) || 0;
+            const inv = r.invoice_no ? r.invoice_no.toString().trim() : null;
+            if (inv) retailCustomersSet.add(inv);
+            retailTotalQty += parseInt(r.qty) || 0;
+        });
+        const retailTotalCustomers = retailCustomersSet.size;
+        const retailAvgBasket = retailTotalCustomers > 0 ? retailTotalSales / retailTotalCustomers : 0;
+        
+        // GRAND totals (pharmacy + retail combined)
+        const allRows = [...pharmacyRows, ...retailRows];
+        let grandTotalSales = 0, grandCustomersSet = new Set(), grandTotalQty = 0;
+        allRows.forEach(r => {
+            grandTotalSales += parseFloat(r.amount) || 0;
+            const inv = r.invoice_no ? r.invoice_no.toString().trim() : null;
+            if (inv) grandCustomersSet.add(inv);
+            grandTotalQty += parseInt(r.qty) || 0;
+        });
+        const grandTotalCustomers = grandCustomersSet.size;
+        const grandAvgBasket = grandTotalCustomers > 0 ? grandTotalSales / grandTotalCustomers : 0;
+        
+        // Date range global
+        const allDates = allRows.map(r => new Date(r.date)).filter(d => !isNaN(d.getTime()));
+        let dateText = 'No dates';
+        if (allDates.length) {
+            const minDate = new Date(Math.min(...allDates));
+            const maxDate = new Date(Math.max(...allDates));
+            dateText = `${minDate.toLocaleDateString()} – ${maxDate.toLocaleDateString()}`;
         }
+        dateRangeVal.textContent = dateText;
+        totalSalesAllSpan.textContent = formatCurrency(grandTotalSales);
+        totalReceiptsAllSpan.textContent = formatNumber(grandTotalCustomers);
+        totalQtyAllSpan.textContent = formatNumber(grandTotalQty);
+        avgBasketGlobalSpan.textContent = formatCurrency(grandAvgBasket);
         
-        function processSalesData(data) {
-            fileInfo.classList.add('show');
-            totalRecords.textContent = data.length;
-            
-            // Allowed service points (case‑insensitive)
-            const allowed = [
-                'katani pharmacy',
-                'retail pos',
-                'katani wholesale/retail',
-                'katani wholesale',
-                'katani retail'
-            ];
-            
-            const combinedData = data.filter(row => {
-                const sp = (row.service_point || '').toString().trim().toLowerCase();
-                return allowed.includes(sp);
-            });
-            
-            filteredRecords.textContent = combinedData.length;
-            
-            if (combinedData.length === 0) {
-                alert('No sales data found for Katani Pharmacy or Retail POS. Please check your file.');
-                return;
-            }
-            
-            resultsSection.style.display = 'block';
-            analyzeData(combinedData);
-        }
+        // ------------------- RENDER TABLE -------------------
+        combinedTableBody.innerHTML = '';
         
-        function analyzeData(data) {
-            // --- Overall unique receipts = customers ---
-            const uniqueReceiptsOverall = new Set(data.map(item => item.invoice_no).filter(Boolean));
-            const totalCustomers = uniqueReceiptsOverall.size;
-            
-            // Group by cashier
-            const cashierGroups = {};
-            const paymentModeTotals = {};
-            
-            data.forEach(sale => {
-                const cashier = sale.user || 'Unknown';
-                if (!cashierGroups[cashier]) {
-                    cashierGroups[cashier] = {
-                        name: cashier,
-                        totalSales: 0,
-                        transactions: new Set(),        // unique invoice numbers (customers)
-                        basketValues: {},                // invoice -> amount
-                        products: {},
-                        paymentModes: {}
-                    };
-                }
-                const g = cashierGroups[cashier];
-                const amount = parseFloat(sale.amount) || 0;
-                const invoice = sale.invoice_no;
-                const qty = parseInt(sale.qty) || 0;
-                const paymentMode = sale.payment_mode || 'Unknown';
-                const product = sale.product || 'Unknown';
-                
-                g.totalSales += amount;
-                if (invoice) g.transactions.add(invoice);
-                
-                if (invoice) {
-                    if (!g.basketValues[invoice]) g.basketValues[invoice] = 0;
-                    g.basketValues[invoice] += amount;
-                }
-                
-                g.products[product] = (g.products[product] || 0) + qty;
-                g.paymentModes[paymentMode] = (g.paymentModes[paymentMode] || 0) + amount;
-                
-                paymentModeTotals[paymentMode] = (paymentModeTotals[paymentMode] || 0) + amount;
-            });
-            
-            // Compute per‑cashier averages (basket = totalSales / customers) and top product
-            Object.values(cashierGroups).forEach(g => {
-                const customerCount = g.transactions.size;
-                g.avgBasketValue = customerCount > 0 ? g.totalSales / customerCount : 0;
-                
-                let topProd = 'None', maxQty = 0;
-                for (const [prod, qty] of Object.entries(g.products)) {
-                    if (qty > maxQty) { maxQty = qty; topProd = prod; }
-                }
-                g.topProduct = topProd;
-            });
-            
-            // Totals for stats
-            const totalSales = Object.values(cashierGroups).reduce((s, g) => s + g.totalSales, 0);
-            const totalProducts = data.reduce((sum, item) => sum + (parseInt(item.qty) || 0), 0);
-            
-            // Average basket overall = totalSales / totalCustomers
-            const overallAvgBasket = totalCustomers > 0 ? totalSales / totalCustomers : 0;
-            
-            // Payment summary (top mode)
-            let payText = 'No data';
-            const payModes = Object.keys(paymentModeTotals);
-            if (payModes.length) {
-                const top = payModes.reduce((a, b) => paymentModeTotals[a] > paymentModeTotals[b] ? a : b);
-                const pct = Math.round((paymentModeTotals[top] / totalSales) * 100);
-                payText = `${top} (${pct}%)`;
-            }
-            
-            // Date range
-            const dates = data.map(d => new Date(d.date)).filter(d => !isNaN(d));
-            const minDate = dates.length ? new Date(Math.min(...dates)) : null;
-            const maxDate = dates.length ? new Date(Math.max(...dates)) : null;
-            
-            // Update UI
-            dateRange.textContent = (minDate && maxDate) ? `${minDate.toLocaleDateString()} to ${maxDate.toLocaleDateString()}` : 'All dates';
-            totalSalesAmount.textContent = `KES ${formatNumber(totalSales)}`;
-            customersCount.textContent = formatNumber(totalCustomers);          // main stat
-            cashiersCount.textContent = Object.keys(cashierGroups).length;
-            totalCustomersFilter.textContent = formatNumber(totalCustomers);   // filter box
-            avgBasketValue.textContent = `KES ${formatNumber(overallAvgBasket)}`;
-            productsSold.textContent = formatNumber(totalProducts);
-            paymentSummary.textContent = payText;
-            
-            // Build cashier table (no unique names column)
-            updateCashierTable(cashierGroups, totalSales);
-            
-            // Create charts
-            createCharts(cashierGroups);
-        }
-        
-        function formatNumber(num) {
-            if (Number.isInteger(num)) return num.toLocaleString('en-US');
-            return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-        
-        function updateCashierTable(groups, totalSales) {
-            cashierTableBody.innerHTML = '';
-            const sorted = Object.values(groups).sort((a, b) => b.totalSales - a.totalSales);
-            
-            sorted.forEach(c => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${c.name}</td>
-                    <td>KES ${formatNumber(c.totalSales)}</td>
-                    <td>${c.transactions.size}</td>
-                    <td>KES ${formatNumber(c.avgBasketValue)}</td>
-                    <td>${c.topProduct}</td>
-                `;
-                cashierTableBody.appendChild(row);
-            });
-            
-            // Footer with totals
-            const totalTx = sorted.reduce((s, c) => s + c.transactions.size, 0);
-            // average basket for footer: totalSales / totalTx (same as overallAvg)
-            const footerAvg = totalTx > 0 ? totalSales / totalTx : 0;
-            
-            const footer = document.createElement('tr');
-            footer.className = 'total-row';
-            footer.innerHTML = `
-                <td><strong>TOTAL / AVERAGE</strong></td>
-                <td><strong>KES ${formatNumber(totalSales)}</strong></td>
-                <td><strong>${totalTx}</strong></td>
-                <td><strong>KES ${formatNumber(footerAvg)}</strong></td>
-                <td><strong>—</strong></td>
+        // Helper row insertion
+        function addRow(label, sales, customers, basket, isSubtotal=false, isGrand=false, isSectionHeader=false) {
+            const tr = document.createElement('tr');
+            if (isGrand) tr.className = 'grand-total-row';
+            else if (isSubtotal) tr.className = 'subtotal-row';
+            else if (isSectionHeader) tr.className = 'section-title-row';
+            const salesFormatted = formatCurrency(sales);
+            const custFormatted = formatNumber(customers);
+            const basketFormatted = formatCurrency(basket);
+            tr.innerHTML = `
+                <td style="font-weight: ${isGrand ? '800' : (isSubtotal ? '700' : '500')}">${label}</td>
+                <td>${salesFormatted}</td>
+                <td>${custFormatted}</td>
+                <td>${basketFormatted}</td>
             `;
-            cashierTableFooter.innerHTML = '';
-            cashierTableFooter.appendChild(footer);
+            combinedTableBody.appendChild(tr);
         }
         
-        function createCharts(groups) {
-            const sorted = Object.values(groups).sort((a, b) => b.totalSales - a.totalSales);
-            const names = sorted.map(c => c.name);
-            const sales = sorted.map(c => c.totalSales);
-            const baskets = sorted.map(c => c.avgBasketValue);
-            
-            if (salesChart) salesChart.destroy();
-            if (basketChart) basketChart.destroy();
-            
-            const ctxSales = document.getElementById('salesChart').getContext('2d');
-            salesChart = new Chart(ctxSales, {
-                type: 'bar',
-                data: {
-                    labels: names,
-                    datasets: [{
-                        label: 'Total Sales (KES)',
-                        data: sales,
-                        backgroundColor: '#2a9d5f',
-                        borderColor: '#1a6b3b',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { position: 'top' },
-                        title: { display: true, text: 'Total Sales by Cashier' }
-                    },
-                    scales: { y: { beginAtZero: true, ticks: { callback: v => 'KES ' + formatNumber(v) } } }
-                }
-            });
-            
-            const ctxBasket = document.getElementById('basketChart').getContext('2d');
-            basketChart = new Chart(ctxBasket, {
-                type: 'bar',
-                data: {
-                    labels: names,
-                    datasets: [{
-                        label: 'Avg Basket (KES)',
-                        data: baskets,
-                        backgroundColor: '#4cc9a7',
-                        borderColor: '#2a9d5f',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { position: 'top' },
-                        title: { display: true, text: 'Average Basket by Cashier (Sales ÷ Customers)' }
-                    },
-                    scales: { y: { beginAtZero: true, ticks: { callback: v => 'KES ' + formatNumber(v) } } }
-                }
+        // ========== PHARMACY SECTION ==========
+        addRow('🏥 KATANI PHARMACY', 0, 0, 0, false, false, true);
+        // Show cashiers (top up to 10, but show all)
+        if (pharmacyCashiers.length === 0) {
+            addRow('   No cashier data', 0, 0, 0);
+        } else {
+            pharmacyCashiers.forEach(c => {
+                addRow(`   👤 ${c.name}`, c.totalSales, c.customers, c.basket);
             });
         }
-    </script>
+        // Pharmacy subtotal line
+        addRow('➜ PHARMACY TOTAL SALES', pharmacyTotalSales, pharmacyTotalCustomers, pharmacyAvgBasket, true);
+        
+        // Blank spacer row (optional but clean)
+        const spacer = document.createElement('tr');
+        spacer.innerHTML = '<td colspan="4" style="height: 8px; background:#faf0f3;"></td>';
+        combinedTableBody.appendChild(spacer);
+        
+        // ========== MINIMART SECTION ==========
+        addRow('🏪 KATANI MINIMART', 0, 0, 0, false, false, true);
+        if (retailCashiers.length === 0) {
+            addRow('   No cashier data', 0, 0, 0);
+        } else {
+            retailCashiers.forEach(c => {
+                addRow(`   👤 ${c.name}`, c.totalSales, c.customers, c.basket);
+            });
+        }
+        addRow('➜ MINIMART TOTAL SALES', retailTotalSales, retailTotalCustomers, retailAvgBasket, true);
+        
+        // spacer before grand
+        const spacer2 = document.createElement('tr');
+        spacer2.innerHTML = '<td colspan="4" style="height: 6px;"></td>';
+        combinedTableBody.appendChild(spacer2);
+        
+        // ========== GRAND TOTALS (Pharmacy + Minimart) ==========
+        addRow('📊 GRAND TOTAL (PHARMACY + MINIMART)', grandTotalSales, grandTotalCustomers, grandAvgBasket, false, true);
+    }
+
+    // Fallback initialize
+    window.addEventListener('load', () => {});
+</script>
 </body>
 </html>
+```
