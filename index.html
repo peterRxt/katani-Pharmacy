@@ -1,623 +1,837 @@
-Version 3.upd
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Katani Pharmacy + Minimart</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Syokimau · Ruiru · Katani · Pharmacies</title>
+    <!-- Bootstrap 5 + Icons + Custom Font -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- SheetJS -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: #f8f5f7;
-            color: #2d3e3a;
-            line-height: 1.5;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 16px 20px;
-        }
-
-        header {
-            background: linear-gradient(135deg, #c44569 0%, #e6678f 100%);
-            color: white;
-            padding: 18px 0;
-            border-radius: 14px;
-            margin-bottom: 24px;
-            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
-        }
-
-        .header-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 28px;
-            flex-wrap: wrap;
-        }
-
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo {
-            font-size: 2rem;
-            color: #fff;
-        }
-
-        h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-        }
-
-        .subtitle {
-            font-size: 0.9rem;
-            opacity: 0.9;
-            margin-top: 4px;
-        }
-
-        .content-wrapper {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        .upload-section, .results-section {
-            background-color: white;
-            border-radius: 16px;
-            padding: 22px 26px;
-            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
-        }
-
-        h2 {
-            color: #c44569;
-            margin-bottom: 18px;
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        h2 i {
-            color: #e6678f;
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            margin-bottom: 18px;
-        }
-        .section-header h2 {
-            margin-bottom: 0;
-        }
-        .export-btn {
-            background-color: #e6678f;
-            color: white;
-            border: none;
-            padding: 8px 18px;
-            border-radius: 40px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: 0.2s;
-            box-shadow: 0 2px 6px rgba(198, 69, 105, 0.2);
-        }
-        .export-btn:hover {
-            background-color: #c44569;
-        }
-
-        .upload-area {
-            border: 2px dashed #e6678f;
-            border-radius: 16px;
-            padding: 32px 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.2s;
-            background-color: #fffafc;
-        }
-
-        .upload-area:hover {
-            background-color: #ffeef4;
-            border-color: #c44569;
-        }
-
-        .upload-area i {
-            font-size: 2.8rem;
-            color: #e6678f;
-            margin-bottom: 12px;
-        }
-
-        .upload-area h3 {
-            font-size: 1.3rem;
-            margin-bottom: 8px;
-            color: #c44569;
-        }
-
-        .upload-btn {
-            background-color: #e6678f;
-            color: white;
-            border: none;
-            padding: 10px 28px;
-            border-radius: 40px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 12px;
-            transition: 0.2s;
-        }
-        .upload-btn:hover {
-            background-color: #c44569;
-        }
-
-        .file-info {
-            margin-top: 16px;
-            padding: 12px 18px;
-            background-color: #ffeef4;
-            border-radius: 12px;
-            display: none;
-            font-size: 0.9rem;
-        }
-        .file-info.show {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        /* KPIs - smaller compact cards */
-        .stats-cards {
-            display: flex;
-            gap: 14px;
-            margin: 10px 0 20px;
-            flex-wrap: wrap;
-        }
-        .stat-mini {
-            background: #fef9fb;
-            flex: 1;
-            min-width: 140px;
-            padding: 12px 16px;
-            border-radius: 14px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            border-left: 4px solid #e6678f;
-            transition: 0.1s;
-        }
-        .stat-mini h4 {
-            color: #9b6b7c;
-            font-size: 0.75rem;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
-            font-weight: 600;
-        }
-        .stat-mini .value {
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: #c44569;
-            line-height: 1.2;
-        }
-
-        /* Main table styling */
-        .table-container {
-            overflow-x: auto;
-            margin: 18px 0 8px;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-            border: 1px solid #f3e2e8;
-        }
-        .sales-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.85rem;
-        }
-        .sales-table th {
-            background-color: #e6678f;
-            color: white;
-            padding: 12px 12px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-        .sales-table td {
-            padding: 10px 12px;
-            border-bottom: 1px solid #f0dfe5;
-            color: #3e2c34;
-        }
-        .sales-table tbody tr:hover {
-            background-color: #fff0f5;
-        }
-        .section-title-row {
-            background-color: #fad9e6 !important;
-            font-weight: 800;
-        }
-        .section-title-row td {
-            font-weight: 800;
-            background-color: #f8cfdf;
-            color: #a13355;
-            font-size: 0.9rem;
-            border-top: 2px solid #e6678f;
-            border-bottom: 1px solid #e6678f;
-        }
-        .subtotal-row {
-            background-color: #fff0f5 !important;
-            font-weight: 700;
-            border-top: 1px solid #eac0cf;
-        }
-        .subtotal-row td {
-            font-weight: 700;
-            color: #b14167;
-        }
-        .grand-total-row {
-            background-color: #ffe4ee !important;
-            font-weight: 800;
-            border-top: 3px solid #c44569;
-            font-size: 0.9rem;
-        }
-        .grand-total-row td {
-            font-weight: 800;
-            color: #8b2c4e;
-        }
-        .footer-note {
-            margin-top: 12px;
-            font-size: 0.75rem;
-            color: #a77a89;
-            text-align: right;
-        }
-        hr {
-            margin: 6px 0;
-        }
-        @media (max-width: 780px) {
-            .header-content { flex-direction: column; text-align: center; gap: 10px; }
-            .stats-cards { gap: 10px; }
-            .stat-mini .value { font-size: 1.2rem; }
-        }
+        * { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+        body { background: #eef2f5; padding-bottom: 2rem; }
+        .gradient-header { background: linear-gradient(135deg, #0B2B40 0%, #1A4A5F 100%); color: white; border-radius: 0 0 2rem 2rem; padding: 1.5rem 1rem; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
+        .card-glass { background: rgba(255,255,255,0.96); border: none; border-radius: 1.5rem; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+        .upload-zone { border: 2px dashed #cbd5e1; border-radius: 1.5rem; background: #fefefe; transition: all 0.2s; cursor: pointer; }
+        .upload-zone:hover { background-color: #f1f5f9; border-color: #1A4A5F; }
+        .kpi-card-modern { background: white; border-radius: 1.5rem; padding: 1rem; border-bottom: 4px solid; box-shadow: 0 8px 20px rgba(0,0,0,0.05); height: 100%; display: flex; flex-direction: column; }
+        .kpi-value { font-size: 1.6rem; font-weight: 800; color: #0f172a; line-height: 1.2; }
+        .kpi-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: #4b5563; }
+        .global-kpi-card { background: linear-gradient(145deg, #ffffff, #fefefe); border-radius: 1.8rem; padding: 1rem 0.8rem; text-align: center; box-shadow: 0 12px 24px rgba(0,0,0,0.05); border-bottom: 4px solid #1A4A5F; height: 100%; }
+        .global-kpi-number { font-size: 2rem; font-weight: 800; color: #0B2B40; }
+        .stats-row { display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 500; color: #4b5563; }
+        .btn-custom-primary { background: #1A4A5F; border-radius: 2rem; padding: 0.5rem 1.2rem; font-weight: 500; color: white; border: none; }
+        .btn-ruiru { background: #8B4513; border-radius: 2rem; padding: 0.5rem 1.2rem; font-weight: 500; color: white; }
+        .top-products-list { font-size: 0.7rem; margin-top: 8px; border-top: 1px solid #e9ecef; padding-top: 6px; }
+        .top-product-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .product-name-trunc { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; font-weight: 500; }
+        .product-amt { font-weight: 600; color: #0f172a; }
+        .manual-card { background: #fef9e6; border-left: 6px solid #f4b942; }
+        .manual-amount-card { background: #fff7e6; border-radius: 1rem; padding: 0.75rem; margin-bottom: 0.5rem; border-left: 3px solid #f4b942; }
+        .pharmacy-card { background: white; border-radius: 1.2rem; padding: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.04); border-left: 5px solid #1e88e5; height: 100%; }
+        .tab-btn { border-radius: 2rem; padding: 0.4rem 1.2rem; font-weight: 500; border: none; background: #f1f5f9; transition: all 0.2s; }
+        .tab-btn.active-tab { background: #0B2B40; color: white; }
+        .katani-total-card { background: linear-gradient(145deg, #ffffff, #fafafa); border-radius: 1.8rem; padding: 1.5rem 1rem; text-align: center; box-shadow: 0 8px 20px rgba(0,0,0,0.05); border-bottom: 4px solid #2c5f2d; }
+        .katani-total-number { font-size: 2.8rem; font-weight: 800; color: #0B2B40; }
+        .table-wrap { overflow-x: auto; }
+        .pay-method-badge { background: #e9ecef; border-radius: 20px; padding: 0.2rem 0.6rem; font-size: 0.7rem; margin: 0 2px; display: inline-block; }
+        .export-btn { background: #28a745; border: none; border-radius: 2rem; padding: 0.5rem 1.5rem; color: white; font-weight: 500; }
+        .daily-table th, .daily-table td { vertical-align: middle; text-align: center; padding: 0.4rem 0.3rem; font-size: 0.8rem; }
+        .daily-table .branch-header { background: #f1f5f9; font-weight: 700; }
+        .daily-table .date-col { font-weight: 600; background: #fafafa; }
+        .daily-table .pay-detail { font-size: 0.7rem; color: #495057; }
+        .daily-table .total-sales { font-weight: 700; color: #0B2B40; }
+        .daily-table .customer-count { font-weight: 500; }
+        .daily-table .sub-header { background: #e9ecef; font-weight: 600; font-size: 0.7rem; }
+        .payment-col { min-width: 80px; }
+        @media (max-width: 768px) { .kpi-value { font-size: 1.3rem; } .daily-table { font-size: 0.6rem; } }
+        .pharmacy-badge-main { background: #0B2B40; color: white; font-size: 0.6rem; padding: 0.15rem 0.5rem; border-radius: 12px; margin-left: 6px; }
     </style>
 </head>
 <body>
-<div class="container">
-    <header>
-        <div class="header-content">
-            <div class="logo-container">
-                <i class="fas fa-prescription-bottle logo"></i>
-                <div>
-                    <h1>Katani Pharmacy + Minimart</h1>
-                    <div class="subtitle">Cashier Sales & Customer Performance Dashboard</div>
-                </div>
-            </div>
+
+<div class="gradient-header mb-4">
+    <div class="container">
+        <div class="d-flex align-items-center justify-content-between flex-wrap">
+            <div><h1 class="display-6 fw-bold"><i class="bi bi-graph-up"></i> Syokimau · Ruiru · Katani</h1><p class="mb-0 opacity-75">Daily summaries · Payment methods · Export · Auto‑pharmacy</p></div>
+            <div><i class="bi bi-pencil-square fs-1"></i></div>
         </div>
-    </header>
-
-    <div class="content-wrapper">
-        <!-- Upload Section -->
-        <section class="upload-section">
-            <h2><i class="fas fa-file-import"></i> Upload Sales File</h2>
-            <div class="upload-area" id="uploadArea">
-                <i class="fas fa-file-excel"></i>
-                <h3>Upload Excel / CSV Sales Data</h3>
-                <p style="font-size:0.85rem;">Columns needed: service_point, invoice_no, amount, qty, user, product, payment_mode, date</p>
-                <button class="upload-btn" id="uploadBtn">Select Excel File</button>
-                <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" style="display: none;">
-            </div>
-            <div class="file-info" id="fileInfo">
-                <span><strong>📄 File:</strong> <span id="fileName">—</span></span>
-                <span><strong>📋 Records:</strong> <span id="totalRecords">0</span></span>
-                <span><strong>✅ Valid rows:</strong> <span id="filteredRecords">0</span></span>
-            </div>
-        </section>
-
-        <!-- Results + Table Section -->
-        <section class="results-section" id="resultsSection" style="display: none;">
-            <div class="section-header">
-                <h2><i class="fas fa-chart-line"></i> Sales & Customers Overview</h2>
-                <button class="export-btn" id="exportTableBtn"><i class="fas fa-camera"></i> Export as PNG</button>
-            </div>
-            
-            <!-- Compact KPI Cards -->
-            <div class="stats-cards">
-                <div class="stat-mini"><h4>📅 PERIOD</h4><div class="value" id="dateRangeVal">—</div></div>
-                <div class="stat-mini"><h4>💰 TOTAL SALES (All)</h4><div class="value" id="totalSalesAll">KES 0</div></div>
-                <div class="stat-mini"><h4>🧾 TOTAL CUSTOMERS</h4><div class="value" id="totalReceiptsAll">0</div></div>
-                <div class="stat-mini"><h4>📦 TOTAL ITEMS SOLD</h4><div class="value" id="totalQtyAll">0</div></div>
-                <div class="stat-mini"><h4>💳 AVG BASKET</h4><div class="value" id="avgBasketGlobal">KES 0</div></div>
-            </div>
-
-            <!-- CASHIER + SECTION TABLE (Format: Pharmacy & Minimart with cashier breakdown) -->
-            <div class="table-container" id="salesTableContainer">
-                <table class="sales-table" id="combinedSalesTable">
-                    <thead>
-                        <tr><th style="width:28%">SECTION / CASHIER</th><th>TOTAL SALES (KES)</th><th>TOTAL CUSTOMERS</th><th>BASKET VALUE (KES)</th></tr>
-                    </thead>
-                    <tbody id="combinedTableBody">
-                        <!-- dynamic rows: Pharmacy header, cashiers, pharmacy total, minimart header, cashiers, minimart total, GRAND totals -->
-                    </tbody>
-                </table>
-            </div>
-            <div class="footer-note">
-                <i class="fas fa-receipt"></i> Customers = unique invoice_no per cashier/section. Basket = Sales ÷ Customers.
-            </div>
-        </section>
     </div>
 </div>
 
+<div class="container">
+    <!-- File upload row -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6"><div class="card card-glass h-100 p-3"><div class="card-body"><h5 class="fw-bold"><i class="bi bi-receipt"></i> Sales File (Excel)</h5><div class="upload-zone p-3 text-center" id="salesUploadZone"><i class="bi bi-cloud-upload fs-1"></i><p class="mb-0">Click or drag .xlsx</p><input type="file" id="salesFileInput" class="d-none" /><div id="salesFileName" class="small text-success mt-1"></div></div></div></div></div>
+        <div class="col-md-6"><div class="card card-glass h-100 p-3"><div class="card-body"><h5 class="fw-bold"><i class="bi bi-database"></i> BC Master File</h5><div class="upload-zone p-3 text-center" id="bcUploadZone"><i class="bi bi-file-spreadsheet fs-1"></i><p class="mb-0">Upload BC (Description + Inventory Posting Group1)</p><input type="file" id="bcFileInput" class="d-none" /><div id="bcFileName" class="small text-success mt-1"></div></div></div></div></div>
+    </div>
+
+    <!-- MANUAL INVOICES: AMOUNTS ONLY -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card card-glass p-3 manual-card">
+                <h5 class="fw-bold"><i class="bi bi-pencil-square"></i> Manual – Syokimau</h5>
+                <div class="input-group mb-2">
+                    <span class="input-group-text">KES</span>
+                    <input type="number" id="syoManualAmount" class="form-control" placeholder="Amount" step="any">
+                    <button class="btn btn-custom-primary" id="addSyoManualBtn"><i class="bi bi-plus-circle"></i></button>
+                </div>
+                <div id="syoManualList" class="mt-1 small"></div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-glass p-3 manual-card">
+                <h5 class="fw-bold"><i class="bi bi-pencil-square"></i> Manual – Ruiru</h5>
+                <div class="input-group mb-2">
+                    <span class="input-group-text">KES</span>
+                    <input type="number" id="ruiruManualAmount" class="form-control" placeholder="Amount" step="any">
+                    <button class="btn btn-ruiru" id="addRuiruManualBtn"><i class="bi bi-plus-circle"></i></button>
+                </div>
+                <div id="ruiruManualList" class="mt-1 small"></div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-glass p-3 manual-card">
+                <h5 class="fw-bold"><i class="bi bi-pencil-square"></i> Manual – Katani</h5>
+                <div class="input-group mb-2">
+                    <span class="input-group-text">KES</span>
+                    <input type="number" id="kataniManualAmount" class="form-control" placeholder="Amount" step="any">
+                    <button class="btn btn-success" id="addKataniManualBtn"><i class="bi bi-plus-circle"></i></button>
+                </div>
+                <div id="kataniManualList" class="mt-1 small"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs & Export -->
+    <div class="d-flex gap-2 mb-4 flex-wrap">
+        <button class="tab-btn active-tab" id="tabMain">📊 Main Dashboard</button>
+        <button class="tab-btn" id="tabStandAlone">💊 All Pharmacies</button>
+        <button class="tab-btn" id="tabDaily">📅 Daily Summaries</button>
+        <button class="btn btn-custom-primary" id="processBothBtn"><i class="bi bi-arrow-left-right"></i> Analyze All</button>
+        <button class="btn export-btn" id="exportDailyBtn"><i class="bi bi-file-excel"></i> Export Daily Summary</button>
+        <button class="btn btn-outline-secondary" id="resetDataBtn"><i class="bi bi-arrow-repeat"></i> Reset</button>
+    </div>
+
+    <!-- MAIN DASHBOARD -->
+    <div id="mainDashboard">
+        <div class="row g-4">
+            <div class="col-lg-4"><div id="syokimauContainer"></div></div>
+            <div class="col-lg-4"><div id="ruiruContainer"></div></div>
+            <div class="col-lg-4"><div id="kataniContainer"></div></div>
+        </div>
+    </div>
+
+    <!-- ALL PHARMACIES - captures EVERY service point with 'pharmacy' -->
+    <div id="standAloneView" style="display: none;">
+        <div class="card card-glass p-3 mb-3">
+            <h4 class="fw-bold text-center"><i class="bi bi-capsule"></i> All Pharmacies <span class="badge bg-info text-dark ms-2">auto‑detected</span></h4>
+            <p class="text-center text-muted small">Every service point containing <strong>"pharmacy"</strong> is captured here, including main branches.</p>
+        </div>
+        <div class="row g-4" id="pharmacyGrid"></div>
+    </div>
+
+    <!-- DAILY SUMMARIES - ALL BRANCHES INCLUDING ALL PHARMACIES -->
+    <div id="dailyView" style="display: none;">
+        <div class="card card-glass p-3 mb-3">
+            <h4 class="fw-bold"><i class="bi bi-calendar3"></i> Daily Sales Summary (all branches)</h4>
+            <p class="text-muted small">Each branch: Sales, Customers, and columns for each payment method</p>
+            <div id="dailySummaryContainer" class="table-wrap"></div>
+        </div>
+    </div>
+
+    <footer class="mt-4 text-center small text-muted"><hr>✅ Deli/Bakery: products starting with "xana" (case-insensitive) EXCLUDING sugar, water, rice.</footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // DOM elements
-    const uploadArea = document.getElementById('uploadArea');
-    const uploadBtn = document.getElementById('uploadBtn');
-    const fileInput = document.getElementById('fileInput');
-    const fileInfo = document.getElementById('fileInfo');
-    const resultsSection = document.getElementById('resultsSection');
-    const fileNameSpan = document.getElementById('fileName');
-    const totalRecordsSpan = document.getElementById('totalRecords');
-    const filteredRecordsSpan = document.getElementById('filteredRecords');
-    const dateRangeVal = document.getElementById('dateRangeVal');
-    const totalSalesAllSpan = document.getElementById('totalSalesAll');
-    const totalReceiptsAllSpan = document.getElementById('totalReceiptsAll');
-    const totalQtyAllSpan = document.getElementById('totalQtyAll');
-    const avgBasketGlobalSpan = document.getElementById('avgBasketGlobal');
-    const combinedTableBody = document.getElementById('combinedTableBody');
-    const exportTableBtn = document.getElementById('exportTableBtn');
+    // ---------- GLOBALS ----------
+    let salesData = [], bcData = [], salesLoaded = false, bcLoaded = false;
+    let syokimauProcessed = null, ruiruProcessed = null, kataniProcessed = null;
+    let syokimauManualAmounts = [], ruiruManualAmounts = [], kataniManualAmounts = [];
+    let currentTab = 'main';
+    let globalDateRange = { min: null, max: null };
+    let dailySummaryData = [];
 
-    let pharmacyRawRows = [];
-    let retailRawRows = [];
-
-    // Helper formatting
-    function formatCurrency(amount) {
-        if (isNaN(amount)) amount = 0;
-        return `KES ${amount.toLocaleString('en-KE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-    }
-    function formatNumber(num) {
-        if (isNaN(num)) num = 0;
-        return num.toLocaleString('en-KE');
+    // Helper: get column value by trying multiple names
+    function getColumnValue(row, possibleNames) {
+        for(let name of possibleNames) {
+            if(row[name] !== undefined && row[name] !== null && row[name] !== '') return row[name];
+        }
+        return '';
     }
 
-    // Determine section
-    function getSectionType(servicePointRaw) {
-        const sp = (servicePointRaw || '').toString().trim().toLowerCase();
-        if (sp === 'pharmacy' || sp.includes('pharmacy')) return 'pharmacy';
-        if (sp.includes('retail') || sp.includes('minimart') || sp.includes('wholesale/retail')) return 'retail';
+    function parsePOSDate(dateStr) {
+        if(!dateStr) return null;
+        if(typeof dateStr === 'number') {
+            let d = new Date((dateStr - 25569) * 86400 * 1000);
+            if(!isNaN(d)) return d;
+            return null;
+        }
+        let str = String(dateStr).trim();
+        let d = new Date(str);
+        if(!isNaN(d) && d.getFullYear() > 2000) return d;
+        let parts = str.split(/[\s\/:]+/);
+        if(parts.length >= 3) {
+            let month = parseInt(parts[0]) - 1;
+            let day = parseInt(parts[1]);
+            let year = parseInt(parts[2]);
+            if(month < 0) month = 0;
+            if(month > 11) { let tmp = month; month = day - 1; day = tmp; }
+            let hour = 0, minute = 0;
+            if(parts.length >= 4) { hour = parseInt(parts[3]) || 0; minute = parseInt(parts[4]) || 0; }
+            if(!isNaN(month) && !isNaN(day) && !isNaN(year) && year > 2000 && year < 2100) {
+                let result = new Date(year, month, day, hour, minute);
+                if(!isNaN(result)) return result;
+            }
+        }
+        let num = parseFloat(str);
+        if(!isNaN(num) && num > 40000 && num < 50000) {
+            let d = new Date((num - 25569) * 86400 * 1000);
+            if(!isNaN(d) && d.getFullYear() > 2000) return d;
+        }
         return null;
     }
 
-    // Upload logic
-    uploadBtn.addEventListener('click', () => fileInput.click());
-    uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.style.borderColor = '#c44569'; uploadArea.style.backgroundColor = '#ffeef4'; });
-    uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor = '#e6678f'; uploadArea.style.backgroundColor = '#fffafc'; });
-    uploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadArea.style.borderColor = '#e6678f';
-        uploadArea.style.backgroundColor = '#fffafc';
-        if (e.dataTransfer.files.length) {
-            fileInput.files = e.dataTransfer.files;
-            handleFileUpload(e.dataTransfer.files[0]);
+    function extractDateRange(rows) {
+        let minDate = null, maxDate = null;
+        let dateCols = ['Date', 'date', 'DATE', 'Transaction Date', 'Invoice Date'];
+        for(let row of rows) {
+            let dateVal = null;
+            for(let col of dateCols) {
+                if(row[col] !== undefined && row[col] !== null && row[col] !== '') {
+                    dateVal = row[col];
+                    break;
+                }
+            }
+            if(dateVal) {
+                let d = parsePOSDate(dateVal);
+                if(d && !isNaN(d) && d.getFullYear() > 2000) {
+                    if(!minDate || d < minDate) minDate = d;
+                    if(!maxDate || d > maxDate) maxDate = d;
+                }
+            }
         }
-    });
-    fileInput.addEventListener('change', (e) => { if (e.target.files.length) handleFileUpload(e.target.files[0]); });
-
-    // Export PNG
-    exportTableBtn.addEventListener('click', () => {
-        const container = document.getElementById('salesTableContainer');
-        html2canvas(container, { scale: 2, backgroundColor: '#ffffff', logging: false }).then(canvas => {
-            const link = document.createElement('a');
-            link.download = 'katani_cashier_summary.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-        }).catch(() => alert('Export error, try again.'));
-    });
-
-    // File processing
-    function handleFileUpload(file) {
-        fileNameSpan.textContent = file.name;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-            const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-            processData(jsonData);
-        };
-        reader.readAsArrayBuffer(file);
+        return { min: minDate, max: maxDate };
     }
 
-    function processData(rawData) {
-        totalRecordsSpan.textContent = rawData.length;
-        let pharmacyArr = [], retailArr = [];
-        rawData.forEach(row => {
-            const spField = row.service_point || row['Service Point'] || row['service point'] || '';
-            const section = getSectionType(spField);
-            if (section === 'pharmacy') pharmacyArr.push(row);
-            else if (section === 'retail') retailArr.push(row);
-        });
-        pharmacyRawRows = pharmacyArr;
-        retailRawRows = retailArr;
-        const totalValid = pharmacyArr.length + retailArr.length;
-        filteredRecordsSpan.textContent = totalValid;
+    function formatDateRange(range) {
+        if(!range.min || !range.max) return 'No date range';
+        if(range.min.getFullYear() < 2000) return 'Date range unavailable';
+        const opts = { year: 'numeric', month: 'short', day: 'numeric' };
+        let minStr = range.min.toLocaleDateString('en-US', opts);
+        let maxStr = range.max.toLocaleDateString('en-US', opts);
+        if(minStr === maxStr) return minStr;
+        return `${minStr} – ${maxStr}`;
+    }
 
-        if (totalValid === 0) {
-            alert('No valid Pharmacy or Minimart records found. Please check service_point values ("Pharmacy" / "Retail POS").');
+    function formatDateKey(d) {
+        if(!d) return 'unknown';
+        try { return d.toISOString().split('T')[0]; } catch(e) { return 'unknown'; }
+    }
+
+    function formatDateDisplay(dStr) {
+        if(!dStr || dStr === 'unknown') return dStr;
+        try {
+            let parts = dStr.split('-');
+            if(parts.length === 3) {
+                let d = new Date(parts[0], parts[1]-1, parts[2]);
+                return d.toLocaleDateString('en-KE', { day:'2-digit', month:'short', year:'numeric' });
+            }
+        } catch(e) {}
+        return dStr;
+    }
+
+    // BC Map
+    function buildBCMap() { 
+        const map = new Map(); 
+        for(const row of bcData) { 
+            let desc = row['Description'] ? String(row['Description']).trim() : ""; 
+            let inv = row['Inventory Posting Group1'] ? String(row['Inventory Posting Group1']).trim() : ""; 
+            if(desc) map.set(desc.toLowerCase(), inv); 
+        } 
+        return map; 
+    }
+
+    // ---------- FLEXIBLE PHARMACY: any service point containing 'pharmacy' ----------
+    function isPharmacy(sp) { 
+        const s = (sp || "").toLowerCase().trim(); 
+        return s.includes('pharmacy') || s.includes('pharm'); 
+    }
+
+    // Main branch filters
+    function isSyokimau(sp) { const s = (sp || "").trim(); return s === "Syokimau Retail" || s === "Syokimau Deli" || s === "Syokimau Pharmacy" || s.toLowerCase().includes("syokimau"); }
+    function isRuiru(sp) { const s = (sp || "").toLowerCase().trim(); return s.includes("ruiru"); }
+    function isKatani(sp) { const s = (sp || "").toLowerCase().trim(); return s === "katani retail" || s.includes("katani retail"); }
+
+    function convertManualAmountsToRows(location, amountList) {
+        if(!amountList.length) return [];
+        return amountList.map((amount, idx) => {
+            let uniqueId = `MANUAL_${location}_${Date.now()}_${idx}_${Math.random().toString(36).substr(2, 4)}`;
+            let productName = `Manual Invoice ${idx+1}`;
+            let sp = location === 'syokimau' ? "Syokimau Retail" : location === 'ruiru' ? "Ruiru Retail" : "Katani Retail";
+            return {
+                'Sale ID': uniqueId, 'Product': productName, 'Customer': 'Manual',
+                'Service Point': sp, 'Station': '', 'Invoice No': uniqueId, 'Qty': 1,
+                'Cashier': 'manual', 'Status': 'Paid', 'Price': parseFloat(amount) || 0,
+                'Amount': parseFloat(amount) || 0, 
+                'Date': new Date().toISOString().split('T')[0],
+                'Category': 'Retail', 'Parent Category': '', 'Tax Category': '',
+                'Payment Mode': 'cash', 'Unit Cost': 0, 'Actual Cost': 0,
+                'Invoice_No': uniqueId, 'service point': sp, 'is_manual_entry': true, 'manual_amount_only': true
+            };
+        });
+    }
+
+    function isDeliBakeryProduct(productName) {
+        const prod = (productName || "").toLowerCase().trim();
+        if(!prod.startsWith('xana')) return false;
+        const excluded = ['sugar', 'water', 'rice'];
+        for(let t of excluded) if(prod.includes(t)) return false;
+        return true;
+    }
+
+    function categorizeRows(rows, bcMap, location) {
+        return rows.map(row => {
+            let prod = (getColumnValue(row, ['Product', 'product']) || "").toString().toLowerCase();
+            let amt = parseFloat(getColumnValue(row, ['Amount', 'amount']) || 0) || 0;
+            let spRaw = (getColumnValue(row, ['Service Point', 'service_point', 'service point']) || "").toString().toLowerCase();
+            let invNo = (getColumnValue(row, ['Invoice No', 'Invoice_No', 'invoice_no']) || "").toString().trim() || `inv_${Math.random()}`;
+            let isManual = row.is_manual_entry === true;
+            let productNameRaw = getColumnValue(row, ['Product', 'product']) || "Generic";
+            let section = "RETAIL";
+            if(location === 'ruiru') section = "WHOLESALE & RETAIL";
+            if(location === 'katani') section = "WHOLESALE/RETAIL";
+            if(isManual) {
+                section = location === 'syokimau' ? "RETAIL" : location === 'ruiru' ? "WHOLESALE & RETAIL" : "WHOLESALE/RETAIL";
+            }
+            else if(location === 'katani') {
+                section = "WHOLESALE/RETAIL";
+            }
+            else if(isPharmacy(spRaw)) {
+                section = "PHARMACY";
+            }
+            else if(isDeliBakeryProduct(prod)) {
+                section = "DELI/BAKERY";
+            }
+            else if(prod.includes("box") || prod.includes("outer") || prod.includes("bale")) {
+                section = "WHOLESALE";
+            }
+            else {
+                let matched = null;
+                for(let [desc, grp] of bcMap.entries()) {
+                    if(prod.includes(desc) || desc.includes(prod)) { matched = grp; break; }
+                }
+                if(matched && matched.toUpperCase() === "WINES & SPIRITS") section = "LIQUOR";
+            }
+            if(isPharmacy(spRaw)) section = "PHARMACY";
+            if(spRaw.includes("liquor")) section = "LIQUOR";
+            return { ...row, amount: amt, invoiceNo: invNo, section, productName: productNameRaw, service_point: spRaw };
+        });
+    }
+
+    function computeKPIsWithTopProducts(categorizedRows) {
+        const sectionsMap = new Map();
+        const globalInvoices = new Set();
+        let globalTotal = 0;
+        for(const row of categorizedRows) {
+            const sec = row.section;
+            const amt = row.amount;
+            const inv = row.invoiceNo || row.invoice_no || getColumnValue(row, ['Invoice No', 'Invoice_No']);
+            const prodNameRaw = row.productName || row.product || getColumnValue(row, ['Product', 'product']) || "Unknown";
+            globalTotal += amt;
+            if(inv) globalInvoices.add(inv);
+            if(!sectionsMap.has(sec)) sectionsMap.set(sec, { totalSales:0, uniqueInvoices: new Set(), transactions:0, productMap: new Map() });
+            const stats = sectionsMap.get(sec);
+            stats.totalSales += amt;
+            if(inv) stats.uniqueInvoices.add(inv);
+            stats.transactions += 1;
+            const currentProdTotal = stats.productMap.get(prodNameRaw) || 0;
+            stats.productMap.set(prodNameRaw, currentProdTotal + amt);
+        }
+        const sectionsResult = [];
+        for(let [section, stats] of sectionsMap.entries()) {
+            const percent = globalTotal > 0 ? (stats.totalSales / globalTotal) * 100 : 0;
+            const topProducts = Array.from(stats.productMap.entries())
+                .map(([name, amtSum]) => ({ name, amount: amtSum }))
+                .sort((a,b) => b.amount - a.amount)
+                .slice(0,3);
+            sectionsResult.push({
+                section,
+                totalSales: stats.totalSales,
+                uniqueCustomers: stats.uniqueInvoices.size,
+                percentOfTotal: percent,
+                transactions: stats.transactions,
+                topProducts
+            });
+        }
+        return { sections: sectionsResult, overallTotal: globalTotal, totalUniqueCustomers: globalInvoices.size };
+    }
+
+    function getFilteredRowsWithManual(location, bcMap) {
+        let baseRows = salesData || [];
+        let filtered = [];
+        if(location === 'syokimau') {
+            filtered = baseRows.filter(r => isSyokimau(getColumnValue(r, ['Service Point', 'service_point', 'service point'])));
+        } else if(location === 'ruiru') {
+            filtered = baseRows.filter(r => isRuiru(getColumnValue(r, ['Service Point', 'service_point', 'service point'])));
+        } else if(location === 'katani') {
+            filtered = baseRows.filter(r => {
+                let sp = getColumnValue(r, ['Service Point', 'service_point', 'service point']);
+                return sp && sp.trim().toLowerCase() === 'katani retail';
+            });
+        }
+        let manualRows = [];
+        if(location === 'syokimau') manualRows = convertManualAmountsToRows('syokimau', syokimauManualAmounts);
+        else if(location === 'ruiru') manualRows = convertManualAmountsToRows('ruiru', ruiruManualAmounts);
+        else if(location === 'katani') manualRows = convertManualAmountsToRows('katani', kataniManualAmounts);
+        return [...filtered, ...manualRows];
+    }
+
+    function processLocation(location) {
+        if(!bcLoaded) return null;
+        const bcMap = buildBCMap();
+        const rows = getFilteredRowsWithManual(location, bcMap);
+        if(rows.length === 0) return { sections: [], overallTotal: 0, totalUniqueCustomers: 0, rawCategorized: [] };
+        const categorized = categorizeRows(rows, bcMap, location);
+        const { sections, overallTotal, totalUniqueCustomers } = computeKPIsWithTopProducts(categorized);
+        return { sections, overallTotal, totalUniqueCustomers, rawCategorized: categorized };
+    }
+
+    // ----- DAILY SUMMARY: includes ALL branches + ALL pharmacies -----
+    function buildDailySummary() {
+        if(!salesData.length) return [];
+        const manualAll = [...convertManualAmountsToRows('syokimau', syokimauManualAmounts),
+                          ...convertManualAmountsToRows('ruiru', ruiruManualAmounts),
+                          ...convertManualAmountsToRows('katani', kataniManualAmounts)];
+        const combined = [...salesData, ...manualAll];
+        
+        const branchMap = new Map(); // branch -> dateMap
+        for(let row of combined) {
+            let sp = getColumnValue(row, ['Service Point', 'service_point', 'service point']) || '';
+            let branch = 'other';
+            // First check main branches
+            if(isSyokimau(sp)) branch = 'syokimau';
+            else if(isRuiru(sp)) branch = 'ruiru';
+            else if(isKatani(sp)) branch = 'katani';
+            // Any pharmacy (including main branches that have 'pharmacy' in name)
+            else if(isPharmacy(sp)) {
+                branch = sp.trim().toLowerCase().replace(/\s+/g, '_');
+            }
+            if(branch === 'other') continue;
+            
+            let amt = parseFloat(getColumnValue(row, ['Amount', 'amount']) || 0) || 0;
+            let inv = getColumnValue(row, ['Invoice No', 'Invoice_No', 'invoice_no']) || `inv_${Math.random()}`;
+            let payMode = getColumnValue(row, ['Payment Mode', 'Payment mode', 'payment_mode', 'payment mode']) || 'unknown';
+            let dateVal = getColumnValue(row, ['Date', 'date', 'DATE', 'Transaction Date']);
+            let parsedDate = parsePOSDate(dateVal);
+            let dateKey = parsedDate && !isNaN(parsedDate) ? formatDateKey(parsedDate) : 'unknown';
+            
+            if(!branchMap.has(branch)) branchMap.set(branch, new Map());
+            const dateMap = branchMap.get(branch);
+            if(!dateMap.has(dateKey)) dateMap.set(dateKey, { totalSales: 0, invoices: new Set(), payments: new Map() });
+            const dayData = dateMap.get(dateKey);
+            dayData.totalSales += amt;
+            dayData.invoices.add(inv);
+            const pm = dayData.payments;
+            pm.set(payMode, (pm.get(payMode) || 0) + amt);
+        }
+        
+        const result = [];
+        for(let [branch, dateMap] of branchMap.entries()) {
+            for(let [dateKey, data] of dateMap.entries()) {
+                result.push({
+                    branch,
+                    date: dateKey,
+                    totalSales: data.totalSales,
+                    customerCount: data.invoices.size,
+                    payments: data.payments
+                });
+            }
+        }
+        result.sort((a,b) => a.date.localeCompare(b.date) || a.branch.localeCompare(b.branch));
+        return result;
+    }
+
+    // RENDER DAILY SUMMARY: all branches, payment methods as separate columns
+    function renderDailySummary() {
+        const container = document.getElementById('dailySummaryContainer');
+        dailySummaryData = buildDailySummary();
+        if(!dailySummaryData.length) {
+            container.innerHTML = `<div class="alert alert-info">No data to summarize. Upload sales file.</div>`;
             return;
         }
-
-        resultsSection.style.display = 'block';
-        buildCashierTable(pharmacyArr, retailArr);
-    }
-
-    // Compute metrics per cashier (user column) within a set of rows
-    function getCashierMetrics(rows) {
-        // rows array, returns Map: cashierName -> { totalSales, customersSet, totalQuantity }
-        const cashierMap = new Map(); // key = cashier name
-        rows.forEach(row => {
-            let cashier = row.user ? row.user.toString().trim() : 'Unassigned';
-            if (cashier === '') cashier = 'Unassigned';
-            const amount = parseFloat(row.amount) || 0;
-            const invoice = row.invoice_no ? row.invoice_no.toString().trim() : null;
-            const qty = parseInt(row.qty) || 0;
-
-            if (!cashierMap.has(cashier)) {
-                cashierMap.set(cashier, { totalSales: 0, customersSet: new Set(), totalQty: 0 });
+        
+        const dateMap = new Map();
+        for(let row of dailySummaryData) {
+            if(!dateMap.has(row.date)) dateMap.set(row.date, new Map());
+            const branchMap = dateMap.get(row.date);
+            branchMap.set(row.branch, { totalSales: row.totalSales, customerCount: row.customerCount, payments: row.payments });
+        }
+        
+        const allBranchesSet = new Set();
+        for(let [date, branchMap] of dateMap.entries()) {
+            for(let [branch] of branchMap.entries()) {
+                allBranchesSet.add(branch);
             }
-            const entry = cashierMap.get(cashier);
-            entry.totalSales += amount;
-            if (invoice) entry.customersSet.add(invoice);
-            entry.totalQty += qty;
-        });
-        // Convert to array sorted by sales desc
-        let cashierArray = Array.from(cashierMap.entries()).map(([name, data]) => ({
-            name,
-            totalSales: data.totalSales,
-            customers: data.customersSet.size,
-            totalQty: data.totalQty,
-            basket: data.customersSet.size > 0 ? data.totalSales / data.customersSet.size : 0
-        }));
-        cashierArray.sort((a,b) => b.totalSales - a.totalSales);
-        return cashierArray;
+        }
+        const allBranches = Array.from(allBranchesSet).sort();
+        const sortedDates = Array.from(dateMap.keys()).sort();
+        
+        const allPayMethods = new Set();
+        for(let [date, branchMap] of dateMap.entries()) {
+            for(let [branch, data] of branchMap.entries()) {
+                if(data.payments) {
+                    for(let [method] of data.payments.entries()) {
+                        allPayMethods.add(method);
+                    }
+                }
+            }
+        }
+        const payMethods = Array.from(allPayMethods).sort();
+        
+        let html = `<table class="table table-bordered table-striped table-hover daily-table"><thead>`;
+        html += `<tr><th rowspan="2" style="vertical-align:middle; background:#e9ecef;">Date</th>`;
+        html += `<th rowspan="2" style="vertical-align:middle; background:#e9ecef;">Branch</th>`;
+        html += `<th rowspan="2" style="vertical-align:middle; background:#e9ecef;">Sales (KES)</th>`;
+        html += `<th rowspan="2" style="vertical-align:middle; background:#e9ecef;">Customers</th>`;
+        for(let pm of payMethods) {
+            html += `<th class="sub-header payment-col">${pm}</th>`;
+        }
+        html += `</tr><tr>`;
+        html += `</tr></thead><tbody>`;
+        
+        for(let date of sortedDates) {
+            const branchMap = dateMap.get(date);
+            for(let branch of allBranches) {
+                const data = branchMap?.get(branch);
+                html += `<tr><td class="date-col">${formatDateDisplay(date)}</td>`;
+                let displayBranch = branch.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                html += `<td>${displayBranch}</td>`;
+                if(data) {
+                    html += `<td class="total-sales">${Math.round(data.totalSales).toLocaleString()}</td>`;
+                    html += `<td class="customer-count">${data.customerCount}</td>`;
+                    for(let pm of payMethods) {
+                        const amt = data.payments.get(pm) || 0;
+                        html += `<td>${Math.round(amt).toLocaleString()}</td>`;
+                    }
+                } else {
+                    html += `<td>—</td><td>—</td>`;
+                    for(let pm of payMethods) {
+                        html += `<td>0</td>`;
+                    }
+                }
+                html += `</tr>`;
+            }
+        }
+        html += `</tbody></table>`;
+        container.innerHTML = html;
     }
 
-    // Compute section totals (aggregated across cashiers)
-    function getSectionTotalsFromCashiers(cashierArray) {
-        let totalSales = 0, totalCustomersSet = new Set(), totalQty = 0;
-        // However we don't have full customer sets per cashier aggregated without double counting invoices across cashiers? 
-        // but each invoice belongs to exactly one cashier (user). So we can sum customers counts safely.
-        // For grand totals we recompute from original rows later for consistency.
-        cashierArray.forEach(c => {
-            totalSales += c.totalSales;
-            totalCustomersSet.size; // we cannot aggregate set across cashiers simply, but we recompute grand from raw rows later.
-        });
-        // We'll instead compute section level from rows again to be accurate for subtotal lines.
-        return { totalSales, totalCustomers: 0 }; // placeholder
+    // Export daily summary to Excel (includes all branches)
+    function exportDailyToExcel() {
+        if(!dailySummaryData.length) { alert('No daily data to export.'); return; }
+        const dateMap = new Map();
+        for(let row of dailySummaryData) {
+            if(!dateMap.has(row.date)) dateMap.set(row.date, new Map());
+            const branchMap = dateMap.get(row.date);
+            branchMap.set(row.branch, { totalSales: row.totalSales, customerCount: row.customerCount, payments: row.payments });
+        }
+        const allBranchesSet = new Set();
+        for(let [date, branchMap] of dateMap.entries()) {
+            for(let [branch] of branchMap.entries()) {
+                allBranchesSet.add(branch);
+            }
+        }
+        const allBranches = Array.from(allBranchesSet).sort();
+        const sortedDates = Array.from(dateMap.keys()).sort();
+        
+        const allPayMethods = new Set();
+        for(let [date, branchMap] of dateMap.entries()) {
+            for(let [branch, data] of branchMap.entries()) {
+                if(data.payments) {
+                    for(let [method] of data.payments.entries()) {
+                        allPayMethods.add(method);
+                    }
+                }
+            }
+        }
+        const payMethods = Array.from(allPayMethods).sort();
+        
+        const rows = [];
+        for(let date of sortedDates) {
+            const branchMap = dateMap.get(date);
+            for(let branch of allBranches) {
+                const data = branchMap?.get(branch);
+                let displayBranch = branch.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                let rowObj = { Date: formatDateDisplay(date), Branch: displayBranch };
+                if(data) {
+                    rowObj['Sales'] = Math.round(data.totalSales);
+                    rowObj['Customers'] = data.customerCount;
+                    for(let pm of payMethods) {
+                        rowObj[pm] = Math.round(data.payments.get(pm) || 0);
+                    }
+                } else {
+                    rowObj['Sales'] = 0;
+                    rowObj['Customers'] = 0;
+                    for(let pm of payMethods) {
+                        rowObj[pm] = 0;
+                    }
+                }
+                rows.push(rowObj);
+            }
+        }
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(rows);
+        XLSX.utils.book_append_sheet(wb, ws, 'DailySummary');
+        XLSX.writeFile(wb, `daily_summary_${new Date().toISOString().slice(0,10)}.xlsx`);
     }
 
-    // Build full table with pharmacy + minimart rows, cashier breakdown and subtotals
-    function buildCashierTable(pharmacyRows, retailRows) {
-        // 1) Pharmacy cashier metrics
-        const pharmacyCashiers = getCashierMetrics(pharmacyRows);
-        // 2) Retail cashier metrics
-        const retailCashiers = getCashierMetrics(retailRows);
-        
-        // Pharmacy subtotals (aggregated from rows)
-        let pharmacyTotalSales = 0, pharmacyCustomersSet = new Set(), pharmacyTotalQty = 0;
-        pharmacyRows.forEach(r => {
-            pharmacyTotalSales += parseFloat(r.amount) || 0;
-            const inv = r.invoice_no ? r.invoice_no.toString().trim() : null;
-            if (inv) pharmacyCustomersSet.add(inv);
-            pharmacyTotalQty += parseInt(r.qty) || 0;
-        });
-        const pharmacyTotalCustomers = pharmacyCustomersSet.size;
-        const pharmacyAvgBasket = pharmacyTotalCustomers > 0 ? pharmacyTotalSales / pharmacyTotalCustomers : 0;
-        
-        // Retail subtotals
-        let retailTotalSales = 0, retailCustomersSet = new Set(), retailTotalQty = 0;
-        retailRows.forEach(r => {
-            retailTotalSales += parseFloat(r.amount) || 0;
-            const inv = r.invoice_no ? r.invoice_no.toString().trim() : null;
-            if (inv) retailCustomersSet.add(inv);
-            retailTotalQty += parseInt(r.qty) || 0;
-        });
-        const retailTotalCustomers = retailCustomersSet.size;
-        const retailAvgBasket = retailTotalCustomers > 0 ? retailTotalSales / retailTotalCustomers : 0;
-        
-        // GRAND totals (pharmacy + retail combined)
-        const allRows = [...pharmacyRows, ...retailRows];
-        let grandTotalSales = 0, grandCustomersSet = new Set(), grandTotalQty = 0;
-        allRows.forEach(r => {
-            grandTotalSales += parseFloat(r.amount) || 0;
-            const inv = r.invoice_no ? r.invoice_no.toString().trim() : null;
-            if (inv) grandCustomersSet.add(inv);
-            grandTotalQty += parseInt(r.qty) || 0;
-        });
-        const grandTotalCustomers = grandCustomersSet.size;
-        const grandAvgBasket = grandTotalCustomers > 0 ? grandTotalSales / grandTotalCustomers : 0;
-        
-        // Date range global
-        const allDates = allRows.map(r => new Date(r.date)).filter(d => !isNaN(d.getTime()));
-        let dateText = 'No dates';
-        if (allDates.length) {
-            const minDate = new Date(Math.min(...allDates));
-            const maxDate = new Date(Math.max(...allDates));
-            dateText = `${minDate.toLocaleDateString()} – ${maxDate.toLocaleDateString()}`;
+    // ------ RENDER MAIN DASHBOARD (unchanged) ------
+    function renderLocationDashboard(containerId, locationName, result) {
+        const container = document.getElementById(containerId);
+        if(!container) return;
+        if(!result || result.sections.length === 0) { 
+            container.innerHTML = `<div class="alert alert-warning">No ${locationName} data. Add manual amounts or upload file.</div>`; 
+            return; 
         }
-        dateRangeVal.textContent = dateText;
-        totalSalesAllSpan.textContent = formatCurrency(grandTotalSales);
-        totalReceiptsAllSpan.textContent = formatNumber(grandTotalCustomers);
-        totalQtyAllSpan.textContent = formatNumber(grandTotalQty);
-        avgBasketGlobalSpan.textContent = formatCurrency(grandAvgBasket);
-        
-        // ------------------- RENDER TABLE -------------------
-        combinedTableBody.innerHTML = '';
-        
-        // Helper row insertion
-        function addRow(label, sales, customers, basket, isSubtotal=false, isGrand=false, isSectionHeader=false) {
-            const tr = document.createElement('tr');
-            if (isGrand) tr.className = 'grand-total-row';
-            else if (isSubtotal) tr.className = 'subtotal-row';
-            else if (isSectionHeader) tr.className = 'section-title-row';
-            const salesFormatted = formatCurrency(sales);
-            const custFormatted = formatNumber(customers);
-            const basketFormatted = formatCurrency(basket);
-            tr.innerHTML = `
-                <td style="font-weight: ${isGrand ? '800' : (isSubtotal ? '700' : '500')}">${label}</td>
-                <td>${salesFormatted}</td>
-                <td>${custFormatted}</td>
-                <td>${basketFormatted}</td>
-            `;
-            combinedTableBody.appendChild(tr);
+        const { sections, overallTotal, totalUniqueCustomers } = result;
+        if(locationName === 'Katani') {
+            let dateRangeStr = formatDateRange(globalDateRange);
+            let topProducts = [];
+            let totalSales = 0, uniqueCust = 0, transactions = 0;
+            if(sections.length > 0) {
+                const sec = sections[0];
+                totalSales = sec.totalSales;
+                uniqueCust = sec.uniqueCustomers;
+                transactions = sec.transactions;
+                topProducts = sec.topProducts || [];
+            }
+            let html = `<div class="card card-glass p-3 mb-3"><div class="d-flex justify-content-between flex-wrap"><h3><i class="bi bi-geo-alt-fill"></i> Katani</h3><div class="global-kpi-card" style="width:auto; padding:0.5rem 1rem;"><span class="global-kpi-number" style="font-size:1.8rem;">${formatCurrency(overallTotal)}</span><span class="global-kpi-label ms-2">Total Sales</span><br><span class="small">👥 ${totalUniqueCustomers} invoices</span><br><span class="small text-muted">${dateRangeStr}</span></div></div></div>`;
+            html += `<div class="katani-total-card"><div class="kpi-title">WHOLESALE / RETAIL</div><div class="katani-total-number">${formatCurrency(overallTotal)}</div><div class="stats-row mt-2"><span><i class="bi bi-people"></i> ${uniqueCust} customers</span><span><i class="bi bi-receipt"></i> ${transactions} transactions</span></div>`;
+            if(topProducts.length > 0) {
+                html += `<div class="top-products-list mt-3"><div class="small fw-semibold mb-1">🏆 Top 3 Products</div>`;
+                topProducts.forEach((p, idx) => {
+                    html += `<div class="top-product-item"><span class="badge bg-light text-dark me-1">${idx+1}</span> <span class="product-name-trunc" title="${escapeHtml(p.name)}">${truncate(p.name,22)}</span> <span class="product-amt">${formatCurrency(p.amount)}</span></div>`;
+                });
+                html += `</div>`;
+            }
+            html += `</div>`;
+            container.innerHTML = html;
+            return;
         }
-        
-        // ========== PHARMACY SECTION ==========
-        addRow('🏥 KATANI PHARMACY', 0, 0, 0, false, false, true);
-        // Show cashiers (top up to 10, but show all)
-        if (pharmacyCashiers.length === 0) {
-            addRow('   No cashier data', 0, 0, 0);
-        } else {
-            pharmacyCashiers.forEach(c => {
-                addRow(`   👤 ${c.name}`, c.totalSales, c.customers, c.basket);
-            });
+        const colorMap = { "WHOLESALE":"#2c5f2d","PHARMACY":"#1e88e5","LIQUOR":"#b23c1c","DELI/BAKERY":"#e67e22","RETAIL":"#6c757d","WHOLESALE & RETAIL":"#2c5f2d" };
+        let ordered = locationName === "Syokimau" ? ["WHOLESALE","PHARMACY","LIQUOR","DELI/BAKERY","RETAIL"] 
+                        : ["PHARMACY","LIQUOR","DELI/BAKERY","WHOLESALE & RETAIL"];
+        const sectionMap = new Map(sections.map(s => [s.section, s]));
+        let dateRangeStr = formatDateRange(globalDateRange);
+        let html = `<div class="card card-glass p-3 mb-3"><div class="d-flex justify-content-between flex-wrap"><h3><i class="bi bi-geo-alt-fill"></i> ${locationName}</h3><div class="global-kpi-card" style="width:auto; padding:0.5rem 1rem;"><span class="global-kpi-number" style="font-size:1.4rem;">${formatCurrency(overallTotal)}</span><span class="global-kpi-label ms-2">Total Sales</span><br><span class="small">👥 ${totalUniqueCustomers} invoices</span><br><span class="small text-muted">${dateRangeStr}</span></div></div></div>`;
+        html += `<div class="row g-3">`;
+        for(let secName of ordered) {
+            const sec = sectionMap.get(secName);
+            if(!sec) { 
+                html += `<div class="col-md-6 col-lg-4"><div class="kpi-card-modern" style="border-bottom-color:#ccc;"><div class="kpi-title">${secName}</div><div class="kpi-value">KES 0</div><div class="stats-row">No data</div></div></div>`; 
+                continue; 
+            }
+            const borderCol = colorMap[secName] || "#6c757d";
+            const percentVal = sec.percentOfTotal;
+            let topHtml = `<div class="top-products-list"><div class="small fw-semibold mb-1">🏆 Top 3</div>`;
+            if(sec.topProducts.length === 0) topHtml += `<div class="text-muted">—</div>`;
+            else {
+                sec.topProducts.forEach((p, idx) => {
+                    topHtml += `<div class="top-product-item"><span class="badge bg-light text-dark me-1">${idx+1}</span> <span class="product-name-trunc" title="${escapeHtml(p.name)}">${truncate(p.name,22)}</span> <span class="product-amt">${formatCurrency(p.amount)}</span></div>`;
+                });
+            }
+            topHtml += `</div>`;
+            html += `<div class="col-md-6 col-lg-4"><div class="kpi-card-modern" style="border-bottom-color: ${borderCol};"><div class="kpi-title">${sec.section}</div><div class="kpi-value">${formatCurrency(sec.totalSales)}</div><div class="stats-row"><span><i class="bi bi-people"></i> ${sec.uniqueCustomers}</span><span>${percentVal.toFixed(1)}%</span><span><i class="bi bi-receipt"></i> ${sec.transactions}</span></div><div class="section-progress"><div style="width:${Math.min(percentVal,100)}%; background:${borderCol}; height:5px;"></div></div>${topHtml}</div></div>`;
         }
-        // Pharmacy subtotal line
-        addRow('➜ PHARMACY TOTAL SALES', pharmacyTotalSales, pharmacyTotalCustomers, pharmacyAvgBasket, true);
-        
-        // Blank spacer row (optional but clean)
-        const spacer = document.createElement('tr');
-        spacer.innerHTML = '<td colspan="4" style="height: 8px; background:#faf0f3;"></td>';
-        combinedTableBody.appendChild(spacer);
-        
-        // ========== MINIMART SECTION ==========
-        addRow('🏪 KATANI MINIMART', 0, 0, 0, false, false, true);
-        if (retailCashiers.length === 0) {
-            addRow('   No cashier data', 0, 0, 0);
-        } else {
-            retailCashiers.forEach(c => {
-                addRow(`   👤 ${c.name}`, c.totalSales, c.customers, c.basket);
-            });
-        }
-        addRow('➜ MINIMART TOTAL SALES', retailTotalSales, retailTotalCustomers, retailAvgBasket, true);
-        
-        // spacer before grand
-        const spacer2 = document.createElement('tr');
-        spacer2.innerHTML = '<td colspan="4" style="height: 6px;"></td>';
-        combinedTableBody.appendChild(spacer2);
-        
-        // ========== GRAND TOTALS (Pharmacy + Minimart) ==========
-        addRow('📊 GRAND TOTAL (PHARMACY + MINIMART)', grandTotalSales, grandTotalCustomers, grandAvgBasket, false, true);
+        html += `</div>`;
+        container.innerHTML = html;
     }
 
-    // Fallback initialize
-    window.addEventListener('load', () => {});
+    // ----- ALL PHARMACIES: captures EVERY service point with 'pharmacy' -----
+    function renderStandAlonePharmacies() {
+        const grid = document.getElementById('pharmacyGrid');
+        if(!bcLoaded || !salesData.length) { 
+            grid.innerHTML = `<div class="alert alert-info">Upload sales data and BC file to see pharmacy insights.</div>`; 
+            return; 
+        }
+        
+        // Get ALL rows that are pharmacy (including main branches)
+        const allRows = salesData.filter(r => isPharmacy(getColumnValue(r, ['Service Point', 'service_point', 'service point'])));
+        const manualAll = [...convertManualAmountsToRows('syokimau', syokimauManualAmounts), 
+                          ...convertManualAmountsToRows('ruiru', ruiruManualAmounts), 
+                          ...convertManualAmountsToRows('katani', kataniManualAmounts)];
+        const manualPharmacy = manualAll.filter(r => isPharmacy(r['service point'] || ''));
+        const combined = [...allRows, ...manualPharmacy];
+        
+        if(combined.length === 0) {
+            grid.innerHTML = `<div class="alert alert-warning">No pharmacy data found. Any service point containing "pharmacy" will appear here.</div>`;
+            return;
+        }
+        
+        const pharmacyMap = new Map();
+        for(let row of combined) {
+            let sp = getColumnValue(row, ['Service Point', 'service_point', 'service point']) || "Unknown Pharmacy";
+            let amt = parseFloat(getColumnValue(row, ['Amount', 'amount']) || 0) || 0;
+            let inv = getColumnValue(row, ['Invoice No', 'Invoice_No', 'invoice_no']) || `inv_${Math.random()}`;
+            let prod = getColumnValue(row, ['Product', 'product']) || "Unknown";
+            if(!pharmacyMap.has(sp)) pharmacyMap.set(sp, { totalSales:0, invoices: new Set(), products: new Map() });
+            let stats = pharmacyMap.get(sp);
+            stats.totalSales += amt;
+            stats.invoices.add(inv);
+            stats.products.set(prod, (stats.products.get(prod) || 0) + amt);
+        }
+        
+        // Include ALL pharmacies - no filtering out main branches
+        let filtered = [];
+        for(let [name, stats] of pharmacyMap.entries()) {
+            filtered.push({ name, ...stats });
+        }
+        
+        // Sort by name for consistent display
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
+        
+        let dateRangeStr = formatDateRange(globalDateRange);
+        let html = `<div class="row g-4"><div class="col-12"><div class="text-end small text-muted mb-2">📅 ${dateRangeStr}</div></div>`;
+        for(let pharm of filtered) {
+            const topProducts = Array.from(pharm.products.entries())
+                .map(([name, amt]) => ({ name, amount: amt }))
+                .sort((a,b) => b.amount - a.amount).slice(0,3);
+            const basketValue = pharm.invoices.size > 0 ? pharm.totalSales / pharm.invoices.size : 0;
+            
+            // Check if this is one of the main branches
+            const isMainBranch = isSyokimau(pharm.name) || isRuiru(pharm.name) || isKatani(pharm.name);
+            const mainBadge = isMainBranch ? '<span class="pharmacy-badge-main">Main</span>' : '';
+            
+            html += `<div class="col-md-6 col-lg-4"><div class="pharmacy-card"><div class="d-flex justify-content-between"><h6 class="fw-bold">${escapeHtml(pharm.name)} ${mainBadge}</h6><span class="badge bg-primary">${pharm.invoices.size} customers</span></div><div class="kpi-value">${formatCurrency(pharm.totalSales)}</div><div class="small">Basket: ${formatCurrency(basketValue)}</div><div class="top-products-list mt-2"><div class="small fw-semibold">🏆 Top 3 SKU</div>`;
+            if(topProducts.length === 0) html += `<div class="text-muted">—</div>`;
+            else {
+                topProducts.forEach((p, idx) => {
+                    html += `<div class="top-product-item"><span class="badge bg-light text-dark me-1">${idx+1}</span> <span class="product-name-trunc" title="${escapeHtml(p.name)}">${truncate(p.name,20)}</span> <span class="product-amt">${formatCurrency(p.amount)}</span></div>`;
+                });
+            }
+            html += `</div></div></div>`;
+        }
+        html += `</div>`;
+        grid.innerHTML = html;
+    }
+
+    function truncate(str, len) { if(!str) return ""; return str.length > len ? str.substring(0,len-2)+".." : str; }
+    function formatCurrency(val) { return new Intl.NumberFormat('en-KE', { style:'currency', currency:'KES', minimumFractionDigits:0, maximumFractionDigits:0 }).format(Math.round(val||0)); }
+    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
+
+    function processAll() {
+        if(!bcLoaded) { alert("Please upload BC Master file first."); return; }
+        if(salesData.length) {
+            globalDateRange = extractDateRange(salesData);
+        }
+        syokimauProcessed = processLocation('syokimau');
+        ruiruProcessed = processLocation('ruiru');
+        kataniProcessed = processLocation('katani');
+        renderLocationDashboard('syokimauContainer', 'Syokimau', syokimauProcessed);
+        renderLocationDashboard('ruiruContainer', 'Ruiru', ruiruProcessed);
+        renderLocationDashboard('kataniContainer', 'Katani', kataniProcessed);
+        if(currentTab === 'standalone') renderStandAlonePharmacies();
+        if(currentTab === 'daily') renderDailySummary();
+    }
+
+    // Manual UI
+    function updateManualListsUI() {
+        ['syoManualList','ruiruManualList','kataniManualList'].forEach(id => {
+            let div = document.getElementById(id);
+            if(!div) return;
+            let arr = id === 'syoManualList' ? syokimauManualAmounts : id === 'ruiruManualList' ? ruiruManualAmounts : kataniManualAmounts;
+            let loc = id === 'syoManualList' ? 'syokimau' : id === 'ruiruManualList' ? 'ruiru' : 'katani';
+            if(arr.length === 0) div.innerHTML = '<span class="text-muted fst-italic">No entries</span>';
+            else {
+                div.innerHTML = arr.map((amt, idx) => `<div class="manual-amount-card d-flex justify-content-between align-items-center p-1"><span>${formatCurrency(amt)}</span><i class="bi bi-trash3 remove-manual" data-location="${loc}" data-idx="${idx}"></i></div>`).join('');
+            }
+        });
+        document.querySelectorAll('.remove-manual').forEach(el => {
+            el.removeEventListener('click', handleManualDelete);
+            el.addEventListener('click', handleManualDelete);
+        });
+    }
+    function handleManualDelete(e) {
+        const target = e.currentTarget;
+        const location = target.getAttribute('data-location');
+        const idx = parseInt(target.getAttribute('data-idx'));
+        if(location === 'syokimau') syokimauManualAmounts.splice(idx, 1);
+        else if(location === 'ruiru') ruiruManualAmounts.splice(idx, 1);
+        else if(location === 'katani') kataniManualAmounts.splice(idx, 1);
+        updateManualListsUI();
+        if(bcLoaded) processAll();
+    }
+    function addManualAmount(location) {
+        let input = location === 'syokimau' ? document.getElementById('syoManualAmount') : location === 'ruiru' ? document.getElementById('ruiruManualAmount') : document.getElementById('kataniManualAmount');
+        let amt = parseFloat(input.value);
+        if(isNaN(amt) || amt <= 0) { alert("Enter a valid positive amount."); return; }
+        if(location === 'syokimau') syokimauManualAmounts.push(amt);
+        else if(location === 'ruiru') ruiruManualAmounts.push(amt);
+        else kataniManualAmounts.push(amt);
+        input.value = '';
+        updateManualListsUI();
+        if(bcLoaded) processAll();
+    }
+
+    function switchTab(tab) {
+        currentTab = tab;
+        document.getElementById('mainDashboard').style.display = tab === 'main' ? 'block' : 'none';
+        document.getElementById('standAloneView').style.display = tab === 'standalone' ? 'block' : 'none';
+        document.getElementById('dailyView').style.display = tab === 'daily' ? 'block' : 'none';
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
+        if(tab === 'main') document.getElementById('tabMain').classList.add('active-tab');
+        else if(tab === 'standalone') document.getElementById('tabStandAlone').classList.add('active-tab');
+        else if(tab === 'daily') document.getElementById('tabDaily').classList.add('active-tab');
+        if(tab === 'standalone' && bcLoaded) renderStandAlonePharmacies();
+        if(tab === 'daily' && bcLoaded) renderDailySummary();
+    }
+
+    function resetAll() {
+        salesData = []; bcData = []; salesLoaded = false; bcLoaded = false;
+        syokimauManualAmounts = []; ruiruManualAmounts = []; kataniManualAmounts = [];
+        syokimauProcessed = null; ruiruProcessed = null; kataniProcessed = null;
+        globalDateRange = { min: null, max: null };
+        dailySummaryData = [];
+        document.getElementById('salesFileName').innerText = ""; document.getElementById('bcFileName').innerText = "";
+        document.getElementById('salesFileInput').value = ""; document.getElementById('bcFileInput').value = "";
+        ['syokimauContainer','ruiruContainer','kataniContainer'].forEach(id => document.getElementById(id).innerHTML = '<div class="alert alert-secondary">Upload & analyze</div>');
+        document.getElementById('pharmacyGrid').innerHTML = '';
+        document.getElementById('dailySummaryContainer').innerHTML = '';
+        updateManualListsUI();
+        switchTab('main');
+    }
+
+    // File handlers
+    function setupUploadZone(zone, fileInput, onLoadCallback, fileNameSpan) {
+        zone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => { const f = e.target.files[0]; if(f){ fileNameSpan.innerText = `📄 ${f.name}`; parseExcel(f, onLoadCallback); } });
+        zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.style.background = "#e9ecef"; });
+        zone.addEventListener('dragleave', () => { zone.style.background = "#fefefe"; });
+        zone.addEventListener('drop', (e) => { e.preventDefault(); zone.style.background = "#fefefe"; const f = e.dataTransfer.files[0]; if(f && (f.name.endsWith('.xlsx')||f.name.endsWith('.xls'))) { fileInput.files = e.dataTransfer.files; fileNameSpan.innerText = `📄 ${f.name}`; parseExcel(f, onLoadCallback); } else alert("Excel file required"); });
+    }
+    function parseExcel(file, callback) { const reader = new FileReader(); reader.onload = (e) => { const data = new Uint8Array(e.target.result); const wb = XLSX.read(data, { type: 'array' }); const sheet = wb.Sheets[wb.SheetNames[0]]; const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" }); callback(rows); }; reader.readAsArrayBuffer(file); }
+    function onSalesLoaded(rows) { salesData = rows; salesLoaded = true; if(bcLoaded) processAll(); }
+    function onBCLoaded(rows) { bcData = rows; bcLoaded = true; processAll(); }
+
+    // Init
+    setupUploadZone(document.getElementById('salesUploadZone'), document.getElementById('salesFileInput'), onSalesLoaded, document.getElementById('salesFileName'));
+    setupUploadZone(document.getElementById('bcUploadZone'), document.getElementById('bcFileInput'), onBCLoaded, document.getElementById('bcFileName'));
+    document.getElementById('processBothBtn').addEventListener('click', processAll);
+    document.getElementById('resetDataBtn').addEventListener('click', resetAll);
+    document.getElementById('exportDailyBtn').addEventListener('click', exportDailyToExcel);
+    document.getElementById('addSyoManualBtn').addEventListener('click', () => addManualAmount('syokimau'));
+    document.getElementById('addRuiruManualBtn').addEventListener('click', () => addManualAmount('ruiru'));
+    document.getElementById('addKataniManualBtn').addEventListener('click', () => addManualAmount('katani'));
+    document.getElementById('tabMain').addEventListener('click', () => switchTab('main'));
+    document.getElementById('tabStandAlone').addEventListener('click', () => switchTab('standalone'));
+    document.getElementById('tabDaily').addEventListener('click', () => switchTab('daily'));
+    updateManualListsUI();
+    switchTab('main');
 </script>
 </body>
 </html>
-```
