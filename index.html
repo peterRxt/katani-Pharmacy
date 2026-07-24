@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -49,6 +48,9 @@
         .payment-col { min-width: 80px; }
         @media (max-width: 768px) { .kpi-value { font-size: 1.3rem; } .daily-table { font-size: 0.6rem; } }
         .pharmacy-badge-main { background: #0B2B40; color: white; font-size: 0.6rem; padding: 0.15rem 0.5rem; border-radius: 12px; margin-left: 6px; }
+        .pharmacy-badge-daily { background: #17a2b8; color: white; font-size: 0.6rem; padding: 0.15rem 0.5rem; border-radius: 12px; margin-left: 6px; }
+        .basket-chip { background: #e9ecef; padding: 0.15rem 0.6rem; border-radius: 20px; font-size: 0.7rem; }
+        .export-pharm-btn { background: #6f42c1; border: none; border-radius: 2rem; padding: 0.5rem 1.5rem; color: white; font-weight: 500; }
     </style>
 </head>
 <body>
@@ -111,6 +113,7 @@
         <button class="tab-btn active-tab" id="tabMain">📊 Main Dashboard</button>
         <button class="tab-btn" id="tabStandAlone">💊 All Pharmacies</button>
         <button class="tab-btn" id="tabDaily">📅 Daily Summaries</button>
+        <button class="tab-btn" id="tabPharmExport">📤 Export Pharmacies</button>
         <button class="btn btn-custom-primary" id="processBothBtn"><i class="bi bi-arrow-left-right"></i> Analyze All</button>
         <button class="btn export-btn" id="exportDailyBtn"><i class="bi bi-file-excel"></i> Export Daily Summary</button>
         <button class="btn btn-outline-secondary" id="resetDataBtn"><i class="bi bi-arrow-repeat"></i> Reset</button>
@@ -132,6 +135,8 @@
             <p class="text-center text-muted small">Every service point containing <strong>"pharmacy"</strong> is captured here, including main branches.</p>
         </div>
         <div class="row g-4" id="pharmacyGrid"></div>
+        <!-- aggregated KPI for all pharmacies -->
+        <div class="row g-3 mt-3" id="pharmacyAggregate"></div>
     </div>
 
     <!-- DAILY SUMMARIES - ALL BRANCHES INCLUDING ALL PHARMACIES -->
@@ -140,6 +145,19 @@
             <h4 class="fw-bold"><i class="bi bi-calendar3"></i> Daily Sales Summary (all branches)</h4>
             <p class="text-muted small">Each branch: Sales, Customers, and columns for each payment method</p>
             <div id="dailySummaryContainer" class="table-wrap"></div>
+            <!-- aggregate KPI for daily table -->
+            <div id="dailyAggregate" class="mt-3 row g-3"></div>
+        </div>
+    </div>
+
+    <!-- EXPORT PHARMACIES ONLY (new tab) -->
+    <div id="pharmExportView" style="display: none;">
+        <div class="card card-glass p-3 mb-3">
+            <h4 class="fw-bold"><i class="bi bi-file-earmark-spreadsheet"></i> Pharmacy‑only Export</h4>
+            <p class="text-muted small">Extracts pharmacy records with date, daily sales, customers, basket value (payment methods excluded).</p>
+            <button class="btn btn-export-pharm" id="exportPharmOnlyBtn"><i class="bi bi-download"></i> Export Pharmacies Excel</button>
+            <div id="pharmExportContainer" class="mt-3 table-wrap"></div>
+            <div id="pharmExportAggregate" class="mt-3 row g-3"></div>
         </div>
     </div>
 
@@ -155,6 +173,7 @@
     let currentTab = 'main';
     let globalDateRange = { min: null, max: null };
     let dailySummaryData = [];
+    let pharmacyExportData = [];
 
     // Helper: get column value by trying multiple names
     function getColumnValue(row, possibleNames) {
@@ -413,11 +432,9 @@
         for(let row of combined) {
             let sp = getColumnValue(row, ['Service Point', 'service_point', 'service point']) || '';
             let branch = 'other';
-            // First check main branches
             if(isSyokimau(sp)) branch = 'syokimau';
             else if(isRuiru(sp)) branch = 'ruiru';
             else if(isKatani(sp)) branch = 'katani';
-            // Any pharmacy (including main branches that have 'pharmacy' in name)
             else if(isPharmacy(sp)) {
                 branch = sp.trim().toLowerCase().replace(/\s+/g, '_');
             }
@@ -456,12 +473,13 @@
         return result;
     }
 
-    // RENDER DAILY SUMMARY: all branches, payment methods as separate columns
+    // RENDER DAILY SUMMARY
     function renderDailySummary() {
         const container = document.getElementById('dailySummaryContainer');
         dailySummaryData = buildDailySummary();
         if(!dailySummaryData.length) {
             container.innerHTML = `<div class="alert alert-info">No data to summarize. Upload sales file.</div>`;
+            document.getElementById('dailyAggregate').innerHTML = '';
             return;
         }
         
@@ -504,6 +522,7 @@
         html += `</tr><tr>`;
         html += `</tr></thead><tbody>`;
         
+        let totalSalesAll = 0, totalCustAll = 0;
         for(let date of sortedDates) {
             const branchMap = dateMap.get(date);
             for(let branch of allBranches) {
@@ -512,11 +531,15 @@
                 let displayBranch = branch.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                 html += `<td>${displayBranch}</td>`;
                 if(data) {
-                    html += `<td class="total-sales">${Math.round(data.totalSales).toLocaleString()}</td>`;
-                    html += `<td class="customer-count">${data.customerCount}</td>`;
+                    const sales = Math.round(data.totalSales);
+                    const cust = data.customerCount;
+                    totalSalesAll += sales;
+                    totalCustAll += cust;
+                    html += `<td class="total-sales">${sales.toLocaleString()}</td>`;
+                    html += `<td class="customer-count">${cust}</td>`;
                     for(let pm of payMethods) {
-                        const amt = data.payments.get(pm) || 0;
-                        html += `<td>${Math.round(amt).toLocaleString()}</td>`;
+                        const amt = Math.round(data.payments.get(pm) || 0);
+                        html += `<td>${amt.toLocaleString()}</td>`;
                     }
                 } else {
                     html += `<td>—</td><td>—</td>`;
@@ -529,68 +552,96 @@
         }
         html += `</tbody></table>`;
         container.innerHTML = html;
+        
+        // aggregate KPI for daily table
+        const avgBasket = totalCustAll > 0 ? totalSalesAll / totalCustAll : 0;
+        document.getElementById('dailyAggregate').innerHTML = `
+            <div class="col-md-4"><div class="kpi-card-modern p-2"><span class="kpi-title">Total Sales</span><div class="kpi-value">${formatCurrency(totalSalesAll)}</div></div></div>
+            <div class="col-md-4"><div class="kpi-card-modern p-2"><span class="kpi-title">Total Customers</span><div class="kpi-value">${totalCustAll}</div></div></div>
+            <div class="col-md-4"><div class="kpi-card-modern p-2"><span class="kpi-title">Avg Basket Value</span><div class="kpi-value">${formatCurrency(avgBasket)}</div></div></div>
+        `;
     }
 
-    // Export daily summary to Excel (includes all branches)
-    function exportDailyToExcel() {
-        if(!dailySummaryData.length) { alert('No daily data to export.'); return; }
-        const dateMap = new Map();
-        for(let row of dailySummaryData) {
-            if(!dateMap.has(row.date)) dateMap.set(row.date, new Map());
-            const branchMap = dateMap.get(row.date);
-            branchMap.set(row.branch, { totalSales: row.totalSales, customerCount: row.customerCount, payments: row.payments });
-        }
-        const allBranchesSet = new Set();
-        for(let [date, branchMap] of dateMap.entries()) {
-            for(let [branch] of branchMap.entries()) {
-                allBranchesSet.add(branch);
-            }
-        }
-        const allBranches = Array.from(allBranchesSet).sort();
-        const sortedDates = Array.from(dateMap.keys()).sort();
+    // ----- PHARMACY EXPORT (new) -----
+    function buildPharmacyExport() {
+        if(!salesData.length) return [];
+        const manualAll = [...convertManualAmountsToRows('syokimau', syokimauManualAmounts),
+                          ...convertManualAmountsToRows('ruiru', ruiruManualAmounts),
+                          ...convertManualAmountsToRows('katani', kataniManualAmounts)];
+        const combined = [...salesData, ...manualAll];
+        // filter only pharmacy rows
+        const pharmRows = combined.filter(r => isPharmacy(getColumnValue(r, ['Service Point', 'service_point', 'service point'])));
+        if(!pharmRows.length) return [];
         
-        const allPayMethods = new Set();
-        for(let [date, branchMap] of dateMap.entries()) {
-            for(let [branch, data] of branchMap.entries()) {
-                if(data.payments) {
-                    for(let [method] of data.payments.entries()) {
-                        allPayMethods.add(method);
-                    }
-                }
-            }
+        // group by date and pharmacy branch
+        const map = new Map();
+        for(let row of pharmRows) {
+            let sp = getColumnValue(row, ['Service Point', 'service_point', 'service point']) || 'Unknown Pharmacy';
+            let amt = parseFloat(getColumnValue(row, ['Amount', 'amount']) || 0) || 0;
+            let inv = getColumnValue(row, ['Invoice No', 'Invoice_No', 'invoice_no']) || `inv_${Math.random()}`;
+            let dateVal = getColumnValue(row, ['Date', 'date', 'DATE', 'Transaction Date']);
+            let parsedDate = parsePOSDate(dateVal);
+            let dateKey = parsedDate && !isNaN(parsedDate) ? formatDateKey(parsedDate) : 'unknown';
+            let key = `${dateKey}||${sp}`;
+            if(!map.has(key)) map.set(key, { date: dateKey, branch: sp, totalSales: 0, invoices: new Set() });
+            let data = map.get(key);
+            data.totalSales += amt;
+            data.invoices.add(inv);
         }
-        const payMethods = Array.from(allPayMethods).sort();
-        
-        const rows = [];
-        for(let date of sortedDates) {
-            const branchMap = dateMap.get(date);
-            for(let branch of allBranches) {
-                const data = branchMap?.get(branch);
-                let displayBranch = branch.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                let rowObj = { Date: formatDateDisplay(date), Branch: displayBranch };
-                if(data) {
-                    rowObj['Sales'] = Math.round(data.totalSales);
-                    rowObj['Customers'] = data.customerCount;
-                    for(let pm of payMethods) {
-                        rowObj[pm] = Math.round(data.payments.get(pm) || 0);
-                    }
-                } else {
-                    rowObj['Sales'] = 0;
-                    rowObj['Customers'] = 0;
-                    for(let pm of payMethods) {
-                        rowObj[pm] = 0;
-                    }
-                }
-                rows.push(rowObj);
-            }
+        const result = [];
+        for(let [key, data] of map.entries()) {
+            result.push({
+                date: data.date,
+                branch: data.branch,
+                daySales: Math.round(data.totalSales),
+                customers: data.invoices.size,
+                basketValue: data.invoices.size > 0 ? Math.round(data.totalSales / data.invoices.size) : 0
+            });
         }
+        result.sort((a,b) => a.date.localeCompare(b.date) || a.branch.localeCompare(b.branch));
+        return result;
+    }
+
+    function renderPharmacyExport() {
+        const container = document.getElementById('pharmExportContainer');
+        pharmacyExportData = buildPharmacyExport();
+        if(!pharmacyExportData.length) {
+            container.innerHTML = `<div class="alert alert-info">No pharmacy records found.</div>`;
+            document.getElementById('pharmExportAggregate').innerHTML = '';
+            return;
+        }
+        let html = `<table class="table table-bordered table-striped"><thead><tr><th>Date</th><th>Pharmacy</th><th>Day Sales (KES)</th><th>Customers</th><th>Basket Value (KES)</th></tr></thead><tbody>`;
+        let totalSales = 0, totalCust = 0;
+        for(let row of pharmacyExportData) {
+            totalSales += row.daySales;
+            totalCust += row.customers;
+            html += `<tr><td>${formatDateDisplay(row.date)}</td><td>${row.branch}</td><td>${row.daySales.toLocaleString()}</td><td>${row.customers}</td><td>${row.basketValue.toLocaleString()}</td></tr>`;
+        }
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+        const avgBasket = totalCust > 0 ? totalSales / totalCust : 0;
+        document.getElementById('pharmExportAggregate').innerHTML = `
+            <div class="col-md-4"><div class="kpi-card-modern p-2"><span class="kpi-title">Total Pharmacy Sales</span><div class="kpi-value">${formatCurrency(totalSales)}</div></div></div>
+            <div class="col-md-4"><div class="kpi-card-modern p-2"><span class="kpi-title">Total Pharmacy Customers</span><div class="kpi-value">${totalCust}</div></div></div>
+            <div class="col-md-4"><div class="kpi-card-modern p-2"><span class="kpi-title">Avg Basket (Pharm)</span><div class="kpi-value">${formatCurrency(avgBasket)}</div></div></div>
+        `;
+    }
+
+    function exportPharmacyOnly() {
+        if(!pharmacyExportData.length) { alert('No pharmacy data to export.'); return; }
         const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.json_to_sheet(rows);
-        XLSX.utils.book_append_sheet(wb, ws, 'DailySummary');
-        XLSX.writeFile(wb, `daily_summary_${new Date().toISOString().slice(0,10)}.xlsx`);
+        const ws = XLSX.utils.json_to_sheet(pharmacyExportData.map(r => ({
+            Date: formatDateDisplay(r.date),
+            Pharmacy: r.branch,
+            'Day Sales (KES)': r.daySales,
+            Customers: r.customers,
+            'Basket Value (KES)': r.basketValue
+        })));
+        XLSX.utils.book_append_sheet(wb, ws, 'Pharmacies');
+        XLSX.writeFile(wb, `pharmacies_export_${new Date().toISOString().slice(0,10)}.xlsx`);
     }
 
-    // ------ RENDER MAIN DASHBOARD (unchanged) ------
+    // ------ RENDER MAIN DASHBOARD ------
     function renderLocationDashboard(containerId, locationName, result) {
         const container = document.getElementById(containerId);
         if(!container) return;
@@ -652,15 +703,15 @@
         container.innerHTML = html;
     }
 
-    // ----- ALL PHARMACIES: captures EVERY service point with 'pharmacy' -----
+    // ----- ALL PHARMACIES: with daily basket value and aggregate -----
     function renderStandAlonePharmacies() {
         const grid = document.getElementById('pharmacyGrid');
         if(!bcLoaded || !salesData.length) { 
             grid.innerHTML = `<div class="alert alert-info">Upload sales data and BC file to see pharmacy insights.</div>`; 
+            document.getElementById('pharmacyAggregate').innerHTML = '';
             return; 
         }
         
-        // Get ALL rows that are pharmacy (including main branches)
         const allRows = salesData.filter(r => isPharmacy(getColumnValue(r, ['Service Point', 'service_point', 'service point'])));
         const manualAll = [...convertManualAmountsToRows('syokimau', syokimauManualAmounts), 
                           ...convertManualAmountsToRows('ruiru', ruiruManualAmounts), 
@@ -669,7 +720,8 @@
         const combined = [...allRows, ...manualPharmacy];
         
         if(combined.length === 0) {
-            grid.innerHTML = `<div class="alert alert-warning">No pharmacy data found. Any service point containing "pharmacy" will appear here.</div>`;
+            grid.innerHTML = `<div class="alert alert-warning">No pharmacy data found.</div>`;
+            document.getElementById('pharmacyAggregate').innerHTML = '';
             return;
         }
         
@@ -679,35 +731,52 @@
             let amt = parseFloat(getColumnValue(row, ['Amount', 'amount']) || 0) || 0;
             let inv = getColumnValue(row, ['Invoice No', 'Invoice_No', 'invoice_no']) || `inv_${Math.random()}`;
             let prod = getColumnValue(row, ['Product', 'product']) || "Unknown";
-            if(!pharmacyMap.has(sp)) pharmacyMap.set(sp, { totalSales:0, invoices: new Set(), products: new Map() });
+            // for daily basket: we need date grouping as well
+            let dateVal = getColumnValue(row, ['Date', 'date', 'DATE', 'Transaction Date']);
+            let parsedDate = parsePOSDate(dateVal);
+            let dateKey = parsedDate && !isNaN(parsedDate) ? formatDateKey(parsedDate) : 'unknown';
+            if(!pharmacyMap.has(sp)) pharmacyMap.set(sp, { totalSales:0, invoices: new Set(), products: new Map(), dailyData: new Map() });
             let stats = pharmacyMap.get(sp);
             stats.totalSales += amt;
             stats.invoices.add(inv);
             stats.products.set(prod, (stats.products.get(prod) || 0) + amt);
+            // daily basket
+            if(!stats.dailyData.has(dateKey)) stats.dailyData.set(dateKey, { sales:0, cust: new Set() });
+            let day = stats.dailyData.get(dateKey);
+            day.sales += amt;
+            day.cust.add(inv);
         }
         
-        // Include ALL pharmacies - no filtering out main branches
         let filtered = [];
         for(let [name, stats] of pharmacyMap.entries()) {
-            filtered.push({ name, ...stats });
+            // compute daily basket average for this pharmacy
+            let totalDailyBasket = 0;
+            let dayCount = 0;
+            for(let [date, dayData] of stats.dailyData.entries()) {
+                if(dayData.cust.size > 0) {
+                    totalDailyBasket += dayData.sales / dayData.cust.size;
+                    dayCount++;
+                }
+            }
+            const avgDailyBasket = dayCount > 0 ? totalDailyBasket / dayCount : 0;
+            filtered.push({ name, ...stats, avgDailyBasket });
         }
-        
-        // Sort by name for consistent display
         filtered.sort((a, b) => a.name.localeCompare(b.name));
         
         let dateRangeStr = formatDateRange(globalDateRange);
         let html = `<div class="row g-4"><div class="col-12"><div class="text-end small text-muted mb-2">📅 ${dateRangeStr}</div></div>`;
+        let totalSalesAll = 0, totalCustAll = 0;
         for(let pharm of filtered) {
+            totalSalesAll += pharm.totalSales;
+            totalCustAll += pharm.invoices.size;
             const topProducts = Array.from(pharm.products.entries())
                 .map(([name, amt]) => ({ name, amount: amt }))
                 .sort((a,b) => b.amount - a.amount).slice(0,3);
             const basketValue = pharm.invoices.size > 0 ? pharm.totalSales / pharm.invoices.size : 0;
-            
-            // Check if this is one of the main branches
             const isMainBranch = isSyokimau(pharm.name) || isRuiru(pharm.name) || isKatani(pharm.name);
             const mainBadge = isMainBranch ? '<span class="pharmacy-badge-main">Main</span>' : '';
             
-            html += `<div class="col-md-6 col-lg-4"><div class="pharmacy-card"><div class="d-flex justify-content-between"><h6 class="fw-bold">${escapeHtml(pharm.name)} ${mainBadge}</h6><span class="badge bg-primary">${pharm.invoices.size} customers</span></div><div class="kpi-value">${formatCurrency(pharm.totalSales)}</div><div class="small">Basket: ${formatCurrency(basketValue)}</div><div class="top-products-list mt-2"><div class="small fw-semibold">🏆 Top 3 SKU</div>`;
+            html += `<div class="col-md-6 col-lg-4"><div class="pharmacy-card"><div class="d-flex justify-content-between"><h6 class="fw-bold">${escapeHtml(pharm.name)} ${mainBadge}</h6><span class="badge bg-primary">${pharm.invoices.size} customers</span></div><div class="kpi-value">${formatCurrency(pharm.totalSales)}</div><div class="small">Basket: ${formatCurrency(basketValue)} <span class="basket-chip">Daily avg: ${formatCurrency(pharm.avgDailyBasket)}</span></div><div class="top-products-list mt-2"><div class="small fw-semibold">🏆 Top 3 SKU</div>`;
             if(topProducts.length === 0) html += `<div class="text-muted">—</div>`;
             else {
                 topProducts.forEach((p, idx) => {
@@ -718,6 +787,14 @@
         }
         html += `</div>`;
         grid.innerHTML = html;
+        
+        // aggregate KPI for all pharmacies
+        const avgBasket = totalCustAll > 0 ? totalSalesAll / totalCustAll : 0;
+        document.getElementById('pharmacyAggregate').innerHTML = `
+            <div class="col-md-4"><div class="kpi-card-modern p-2"><span class="kpi-title">Total Pharmacy Sales</span><div class="kpi-value">${formatCurrency(totalSalesAll)}</div></div></div>
+            <div class="col-md-4"><div class="kpi-card-modern p-2"><span class="kpi-title">Total Pharmacy Customers</span><div class="kpi-value">${totalCustAll}</div></div></div>
+            <div class="col-md-4"><div class="kpi-card-modern p-2"><span class="kpi-title">Avg Basket (Pharm)</span><div class="kpi-value">${formatCurrency(avgBasket)}</div></div></div>
+        `;
     }
 
     function truncate(str, len) { if(!str) return ""; return str.length > len ? str.substring(0,len-2)+".." : str; }
@@ -737,6 +814,7 @@
         renderLocationDashboard('kataniContainer', 'Katani', kataniProcessed);
         if(currentTab === 'standalone') renderStandAlonePharmacies();
         if(currentTab === 'daily') renderDailySummary();
+        if(currentTab === 'pharmexport') renderPharmacyExport();
     }
 
     // Manual UI
@@ -783,12 +861,15 @@
         document.getElementById('mainDashboard').style.display = tab === 'main' ? 'block' : 'none';
         document.getElementById('standAloneView').style.display = tab === 'standalone' ? 'block' : 'none';
         document.getElementById('dailyView').style.display = tab === 'daily' ? 'block' : 'none';
+        document.getElementById('pharmExportView').style.display = tab === 'pharmexport' ? 'block' : 'none';
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
         if(tab === 'main') document.getElementById('tabMain').classList.add('active-tab');
         else if(tab === 'standalone') document.getElementById('tabStandAlone').classList.add('active-tab');
         else if(tab === 'daily') document.getElementById('tabDaily').classList.add('active-tab');
+        else if(tab === 'pharmexport') document.getElementById('tabPharmExport').classList.add('active-tab');
         if(tab === 'standalone' && bcLoaded) renderStandAlonePharmacies();
         if(tab === 'daily' && bcLoaded) renderDailySummary();
+        if(tab === 'pharmexport' && bcLoaded) renderPharmacyExport();
     }
 
     function resetAll() {
@@ -797,11 +878,16 @@
         syokimauProcessed = null; ruiruProcessed = null; kataniProcessed = null;
         globalDateRange = { min: null, max: null };
         dailySummaryData = [];
+        pharmacyExportData = [];
         document.getElementById('salesFileName').innerText = ""; document.getElementById('bcFileName').innerText = "";
         document.getElementById('salesFileInput').value = ""; document.getElementById('bcFileInput').value = "";
         ['syokimauContainer','ruiruContainer','kataniContainer'].forEach(id => document.getElementById(id).innerHTML = '<div class="alert alert-secondary">Upload & analyze</div>');
         document.getElementById('pharmacyGrid').innerHTML = '';
         document.getElementById('dailySummaryContainer').innerHTML = '';
+        document.getElementById('pharmExportContainer').innerHTML = '';
+        document.getElementById('dailyAggregate').innerHTML = '';
+        document.getElementById('pharmacyAggregate').innerHTML = '';
+        document.getElementById('pharmExportAggregate').innerHTML = '';
         updateManualListsUI();
         switchTab('main');
     }
@@ -823,15 +909,74 @@
     setupUploadZone(document.getElementById('bcUploadZone'), document.getElementById('bcFileInput'), onBCLoaded, document.getElementById('bcFileName'));
     document.getElementById('processBothBtn').addEventListener('click', processAll);
     document.getElementById('resetDataBtn').addEventListener('click', resetAll);
-    document.getElementById('exportDailyBtn').addEventListener('click', exportDailyToExcel);
+    document.getElementById('exportDailyBtn').addEventListener('click', () => { if(bcLoaded) { renderDailySummary(); exportDailyToExcel(); } });
+    document.getElementById('exportPharmOnlyBtn').addEventListener('click', exportPharmacyOnly);
     document.getElementById('addSyoManualBtn').addEventListener('click', () => addManualAmount('syokimau'));
     document.getElementById('addRuiruManualBtn').addEventListener('click', () => addManualAmount('ruiru'));
     document.getElementById('addKataniManualBtn').addEventListener('click', () => addManualAmount('katani'));
     document.getElementById('tabMain').addEventListener('click', () => switchTab('main'));
     document.getElementById('tabStandAlone').addEventListener('click', () => switchTab('standalone'));
     document.getElementById('tabDaily').addEventListener('click', () => switchTab('daily'));
+    document.getElementById('tabPharmExport').addEventListener('click', () => switchTab('pharmexport'));
     updateManualListsUI();
     switchTab('main');
+
+    // helper export daily (already defined)
+    function exportDailyToExcel() {
+        if(!dailySummaryData.length) { alert('No daily data to export.'); return; }
+        const dateMap = new Map();
+        for(let row of dailySummaryData) {
+            if(!dateMap.has(row.date)) dateMap.set(row.date, new Map());
+            const branchMap = dateMap.get(row.date);
+            branchMap.set(row.branch, { totalSales: row.totalSales, customerCount: row.customerCount, payments: row.payments });
+        }
+        const allBranchesSet = new Set();
+        for(let [date, branchMap] of dateMap.entries()) {
+            for(let [branch] of branchMap.entries()) {
+                allBranchesSet.add(branch);
+            }
+        }
+        const allBranches = Array.from(allBranchesSet).sort();
+        const sortedDates = Array.from(dateMap.keys()).sort();
+        const allPayMethods = new Set();
+        for(let [date, branchMap] of dateMap.entries()) {
+            for(let [branch, data] of branchMap.entries()) {
+                if(data.payments) {
+                    for(let [method] of data.payments.entries()) {
+                        allPayMethods.add(method);
+                    }
+                }
+            }
+        }
+        const payMethods = Array.from(allPayMethods).sort();
+        const rows = [];
+        for(let date of sortedDates) {
+            const branchMap = dateMap.get(date);
+            for(let branch of allBranches) {
+                const data = branchMap?.get(branch);
+                let displayBranch = branch.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                let rowObj = { Date: formatDateDisplay(date), Branch: displayBranch };
+                if(data) {
+                    rowObj['Sales'] = Math.round(data.totalSales);
+                    rowObj['Customers'] = data.customerCount;
+                    for(let pm of payMethods) {
+                        rowObj[pm] = Math.round(data.payments.get(pm) || 0);
+                    }
+                } else {
+                    rowObj['Sales'] = 0;
+                    rowObj['Customers'] = 0;
+                    for(let pm of payMethods) {
+                        rowObj[pm] = 0;
+                    }
+                }
+                rows.push(rowObj);
+            }
+        }
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(rows);
+        XLSX.utils.book_append_sheet(wb, ws, 'DailySummary');
+        XLSX.writeFile(wb, `daily_summary_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
 </script>
 </body>
 </html>
